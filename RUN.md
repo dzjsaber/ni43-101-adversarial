@@ -33,9 +33,23 @@ src/selftest_guards.py 零成本回归套件(不调 API, 覆盖全部已知缺�
 src/evolve.py          失败史 -> 规则 -> 注入两端 prompt(滤除演习窗口)
 src/replay_evolution.py 进化规则 A/B 复跑(题目第 4 条的可复现证据)
 src/evaluate.py        字段级 ±5% 对账(带页码/单位/名称自动识别)
-src/mineral_mcp.py     MCP 工具层: 费用护栏(无 confirm 拒绝) + 路径白名单 + 只读查询
-data/gt/*.json         手工核验真值(p17 摘要表 / p192 明细表)
-data/reports/*.pdf     输入报告(当前只有 barrick.pdf)
+src/mineral_mcp.py     MCP 工具层: 费用护栏(无 confirm 拒绝) + 路径白名单 + 8 个工具(stdio, 零依赖)
+src/mcp_probe.py       模拟 MCP 宿主做真握手, 验证 8 个工具与护栏(零成本)
+src/check_docs.py      文档与仓库一致性校验(零成本): 文件引用/行数/条数防止漂移
+data/reports/barrick.pdf                        输入报告(当前只有这一份, 338 页)
+data/processed/barrick.pages.jsonl              定位出的 124 个候选页
+data/processed/extracted.jsonl                  extractor 单独运行: 106 条原始记录
+data/processed/critiques.jsonl                  critic 单独运行: 12 页评分
+data/processed/pipeline.records.jsonl           主交付物 98 条(84 detail + 14 summary)
+data/processed/pipeline.detail.jsonl            可交付明细 84 条
+data/processed/abstain.jsonl                    弃权页(干净数据下为空)
+data/processed/eval_report.json                 最近一次对账报告
+data/processed/replay_ab.json                   进化规则 A/B 复跑结果
+data/evolution.jsonl                            失败/返工/弃权/演习/对账轨迹(append-only)
+data/evolved_rules.txt / evolved_critic_rules.txt  炼化出的两端规则
+data/gt/barrick_p17_gt.json                     摘要表真值 7 条
+data/gt/barrick_p192_gt.json                    明细表真值 42 条(泄漏免疫)
+README.md / RUN.md / requirements.txt / .gitignore
 ```
 
 ## 3. 运行命令
@@ -51,6 +65,8 @@ python src/evolve.py                                        # 失败史 -> 规�
 python src/replay_evolution.py                              # 进化规则 A/B(要 2 个 key)
 python src/evaluate.py data/gt/barrick_p192_gt.json         # GT 对账(不要 key)
 python src/mineral_mcp.py --selftest                        # 费用护栏/白名单自检(不要 key)
+python src/mcp_probe.py                                     # 模拟 MCP 宿主握手(不要 key)
+python src/check_docs.py                                    # 文档与仓库一致性(不要 key)
 ```
 
 ## 4. 结果摘要(Barrick Carlin Complex, 2024 技术报告)
@@ -147,3 +163,43 @@ Test A 通过:           守恒闸放行 89×1.99/31.1035=5.7, 拦截篡改值 3
 | 缺失交付物 | 新增 requirements.txt / RUN.md / replay_evolution.py / mineral_mcp.py / selftest_guards.py | MCP 护栏自检 5/5 PASS |
 | README 与代码不符 | `locate.py`→`preprocess.py`; GT 对账状态改已完成; 规则污染 A/B 改为可复现的 replay_evolution 数字 | 见 README |
 | 仓库卫生 | 删 `data/ground_truth/fake_gt.json`, 加 `.gitignore` | `git status` |
+
+## 9. 用 MCP 宿主(Cherry Studio)验证项目功能
+
+`src/mineral_mcp.py` 是标准 MCP stdio server(零依赖, 不需要 `pip install mcp`)。
+先用自带探针确认服务端没问题(零成本):
+
+```powershell
+python src/mcp_probe.py     # 真握手 + 8 个工具 + 护栏, 应输出 FAILED: 无
+python src/mineral_mcp.py --selftest   # 只验护栏
+```
+
+Cherry Studio(实测版本 2.1.4)里的配置:
+
+| 项 | 值 |
+|---|---|
+| 类型 | stdio |
+| 命令 | `C:\Users\86177\AppData\Local\Programs\Python\Python38\python.exe` |
+| 参数 | `C:\Users\86177\PycharmProjects\ni43-101-adversarial\src\mineral_mcp.py` |
+| 环境变量 | `PYTHONIOENCODING = utf-8` |
+
+无参数启动即进入 stdio 模式(`--stdio` 可省略; `--fastmcp` 才需要 pip 包)。
+保存后点一次 **刷新/重新连接** —— 之前失败过一次会缓存 `MCP error -32000: Connection closed`,
+必须重新握手才会重新拉取工具列表。
+
+连上后, 在对话里启用该服务器的工具, 依次问下面这些问题即可验证各功能
+(前 4 项零成本, 后 2 项会真实花钱):
+
+| 想验证什么 | 对模型说的话 | 期望结果 |
+|---|---|---|
+| 服务活着 + 白名单 | “列出可处理的报告” | `可处理报告: - barrick.pdf` |
+| 交付物完整性与分类 | “给我交付物摘要” | `records: 98`, `by_page {17:7,154:7,191:42,192:42}`, `by_record_class {detail:84, summary:14}`, `abstained_pages: []` |
+| 抽取准确率(字段级 ±5%) | “对账 p192 的 GT” | `匹配 42/42`, `字段级准确率 210/210 = 100.0%`, `记录级全对 42/42` |
+| 页码溯源 | “第 17 页抽了什么” | 7 条记录, 每条带 `"source_page": 17` |
+| 费用护栏 | “用 run_pipeline 跑 barrick.pdf”(不说 confirm) | 返回 `refused: true`, 要求 `confirm=True` |
+| 弃权机制(核心) | “用 run_fault_drill, confirm=true, always=true 跑演习” | `verdict: ABSTAIN`, `pass: true`; 换成 `always=false` 应得 `ACCEPT`(被拦下返工复原) |
+
+注意: `run_pipeline` / `run_fault_drill` 用的是**项目自己的** DeepSeek + GLM 密钥(读环境变量),
+与你在 Cherry Studio 里选的对话模型无关 —— 对话模型只负责决定调哪个工具。
+另外 `D:\Cherry Studio` 里那条指向旧仓库 `pythonProject\mineral-mcp\server.py` 的 MCP 条目
+是早期版本(只有确定性 pdfplumber 抽取, 没有费用护栏与白名单), 两条容易混淆, 建议只留新的。

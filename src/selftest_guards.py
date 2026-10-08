@@ -65,19 +65,22 @@ check(pipeline.conservation_issues([dict(base, contained_moz=None)]) == []
       "三元组残缺(contained=null) 旧闸静默、新闸拦截")
 
 print("C. critic 指控的机械核验")
-crit_path = ROOT / "data" / "processed" / "critiques.jsonl"
-if crit_path.exists() and p17:
-    crit = next((c for c in load(crit_path) if c.get("page") == 17), None)
-    if crit:
-        text17 = "\n".join(by_page[17]["text_lines"])
-        fixed = guards.filter_claims(crit, p17, text17)
-        print(f"   原始: score={crit['score']} issues={len(crit['issues'])} -> "
-              f"核验后: score={fixed['score']} issues={len(fixed['issues'])} "
-              f"驳回={len(fixed.get('rejected_claims', []))}")
-        check(len(fixed.get("rejected_claims", [])) > 0 or crit["score"] >= 10,
-              "无原文佐证的指控被代码驳回")
+# 用 evolution.jsonl 里留档的真实误报事件做回归(不依赖 critiques.jsonl 的当次运行结果:
+# 该事件是历史上 critic 对 p17 给出的 8 分 + 3 条指控, 人工对账证实全部误报)
+hist = next((e for e in load(ROOT / "data" / "evolution.jsonl")
+             if e.get("kind") == "critic_false_positive"), None)
+if hist and p17:
+    issues = hist.get("detail", {}).get("issues", [])
+    text17 = "\n".join(by_page[17]["text_lines"])
+    fixed = guards.filter_claims({"score": hist.get("detail", {}).get("score", 8),
+                                  "issues": issues}, p17, text17)
+    print(f"   留档误报事件: score={hist.get('detail', {}).get('score')} issues={len(issues)} -> "
+          f"核验后: score={fixed['score']} issues={len(fixed['issues'])} "
+          f"驳回={len(fixed.get('rejected_claims', []))}")
+    check(len(fixed.get("rejected_claims", [])) == len(issues) and fixed["score"] == 10,
+          "留档的 3 条误报全部被代码驳回、分数按原文复原")
 else:
-    print("   (无 critiques.jsonl, 跳过)")
+    print("   (evolution.jsonl 里没有 critic_false_positive 留档, 跳过)")
 
 print("D. 提示词泄漏回归")
 sys.argv = [str(ROOT / "src" / "extractor.py")]
