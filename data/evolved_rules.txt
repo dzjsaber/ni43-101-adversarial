@@ -1,0 +1,5 @@
+# Extractor rules distilled from real failures
+# generated 2026-10-09 00:45:50 from 1 real failure events (drill windows excluded); template hits: {'版式': 1}
+
+1. Tables vary in layout (summary tables in Section 1 differ from Chapter 14): locate each column group header first, then map values by position.
+2. Context: critic 对摘要表版式(行名拆行/数值列重复)误报; 指控须能被页面原文+稳定复抽佐证, 否则仲裁驳回

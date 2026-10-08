@@ -3,6 +3,7 @@ extractor.py — 调 DeepSeek 从候选页抽取矿产资源记录
 用法: python src/extractor.py data/processed/barrick.pages.jsonl
 输出: data/processed/extracted.jsonl (每行一条记录)
 前置: 环境变量 DEEPSEEK_API_KEY
+进化: 若存在 data/evolved_rules.txt, 自动追加进 system prompt
 """
 import json
 import os
@@ -18,6 +19,16 @@ MODEL = "deepseek-chat"
 MIN_SCORE = 10      # 只喂 score>=10 的高分页
 MAX_PAGES = 12      # 送审上限,防烧钱
 RETRIES = 3
+
+
+def _evolved_rules() -> str:
+    """读取 evolve.py 炼出的历史失败规则, 注入 system prompt"""
+    p = ROOT / "data" / "evolved_rules.txt"
+    if p.exists():
+        return ("\n\nADDITIONAL RULES (distilled from past failures, obey strictly):\n"
+                + p.read_text(encoding="utf-8"))
+    return ""
+
 
 SYSTEM_PROMPT = """You extract mineral resource records from NI 43-101 report pages.
 Input: text lines from ONE PDF page. Output: ONLY a JSON array, no fences, no commentary.
@@ -69,7 +80,7 @@ def call_llm(user_text: str, api_key: str) -> str:
         "temperature": 0,               # 抽取要确定性,不要创造性
         "max_tokens": 4096,
         "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": SYSTEM_PROMPT + _evolved_rules()},
             {"role": "user", "content": FEWSHOT_USER},
             {"role": "assistant", "content": FEWSHOT_ASSISTANT},
             {"role": "user", "content": user_text},
