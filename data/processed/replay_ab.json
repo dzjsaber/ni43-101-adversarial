@@ -1,0 +1,88 @@
+{
+  "rules": "1. Tables vary in layout (summary tables in Section 1 differ from Chapter 14): locate each column group header first, then map values by position.\n2. Skip aggregate rows: any row whose name contains Total, and grand-total rows where the word Total is printed on a separate line AFTER the numbers (the row itself may carry a plain name like 'Carlin Complex'). A row that is the sum of other listed rows is never a record.\n3. Context: Underground (Measured): 原文该行是聚合行(Total), 不得作为矿点记录 | Underground (Indicated): 原文该行是聚合行(Total), 不得作为矿点记录 | Underground (M&I): 原文该行是聚合行(Total), 不得作为矿点记录\n4. Context: 聚合行(Total)/摘要组行/跨页重复不得进交付物: 由代码在交付前剔除或标注并留痕",
+  "summary": {
+    "pages": 4,
+    "score_A": 10.0,
+    "score_B": 10.0,
+    "violations_A": 8,
+    "violations_B": 0,
+    "records_A": 114,
+    "records_B": 98
+  },
+  "rows": [
+    {
+      "page": 17,
+      "A": {
+        "n_records": 11,
+        "score": 10,
+        "violations": [
+          "Underground (Measured): 原文该行是聚合行(Total), 不得作为矿点记录",
+          "Underground (Indicated): 原文该行是聚合行(Total), 不得作为矿点记录",
+          "Underground (M&I): 原文该行是聚合行(Total), 不得作为矿点记录",
+          "Underground (Inferred): 原文该行是聚合行(Total), 不得作为矿点记录"
+        ]
+      },
+      "B": {
+        "n_records": 7,
+        "score": 10,
+        "violations": []
+      },
+      "identical_output": false,
+      "score_delta": 0,
+      "violation_delta": -4
+    },
+    {
+      "page": 154,
+      "A": {
+        "n_records": 11,
+        "score": 10,
+        "violations": [
+          "Underground (Measured): 原文该行是聚合行(Total), 不得作为矿点记录",
+          "Underground (Indicated): 原文该行是聚合行(Total), 不得作为矿点记录",
+          "Underground (M&I): 原文该行是聚合行(Total), 不得作为矿点记录",
+          "Underground (Inferred): 原文该行是聚合行(Total), 不得作为矿点记录"
+        ]
+      },
+      "B": {
+        "n_records": 7,
+        "score": 10,
+        "violations": []
+      },
+      "identical_output": false,
+      "score_delta": 0,
+      "violation_delta": -4
+    },
+    {
+      "page": 191,
+      "A": {
+        "n_records": 42,
+        "score": 10,
+        "violations": []
+      },
+      "B": {
+        "n_records": 42,
+        "score": 10,
+        "violations": []
+      },
+      "identical_output": true,
+      "score_delta": 0,
+      "violation_delta": 0
+    },
+    {
+      "page": 192,
+      "A": {
+        "n_records": 50,
+        "score": 10,
+        "violations": []
+      },
+      "B": {
+        "n_records": 42,
+        "score": 10,
+        "violations": []
+      },
+      "identical_output": false,
+      "score_delta": 0,
+      "violation_delta": 0
+    }
+  ]
+}

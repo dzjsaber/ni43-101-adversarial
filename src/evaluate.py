@@ -1,82 +1,308 @@
 """
-evaluate.py — 评分协议:字段级 accuracy(±5% 容差)
-官方 ground truth 到位后,只需改 NUMERIC_FIELDS 的字段映射。
+evaluate.py — 对 GT 做字段级对账评分 (题面容差 ±5%)
+用法:
+  python src/evaluate.py <gt_path> [pred_path]   # 真实 GT 对账
+  python src/evaluate.py --demo                  # 冒烟测试: 用人工核验过的 p17 十条真值
+默认: gt=data/gt/barrick_gt.json  pred=data/processed/pipeline.records.jsonl
+GT 字段名自动识别; 命名特殊时在下方 GT_FIELD_MAP 手写映射即可( canon -> 你的字段名 )
+单位约定: 数值 >1e4 的 tonnes 视为原始吨(自动 /1e6 转Mt), >1e3 的 contained
+          视为原始盎司(自动 /1e6 转Moz), grade 一律 g/t 原值
+输出: 控制台摘要 + data/processed/eval_report.json
 """
-import json, math
+import json
+import re
+import sys
+import time
+from difflib import SequenceMatcher
 from pathlib import Path
 
-TOLERANCE = 0.05
-NUMERIC_FIELDS = {"tonnes_mt": "tonnes_mt", "grade_gpt": "grade_gpt", "contained_moz": "contained_moz"}
-EXACT_FIELDS = ["category"]   # 精确匹配字段:类别抽错=数字全错,单独算
+ROOT = Path(__file__).resolve().parents[1]
+TOLERANCE = 0.05      # 字段级 ±5%
+MATCH_SIM = 0.55      # 矿名模糊匹配阈值
+GT_FIELD_MAP = {}     # 例: {"deposit": "Location", "tonnes": "Tonnes (Mt)"}
 
-def norm(s): return " ".join(str(s).lower().split())
+# 字段自动识别候选表: 先精确同名, 再子串回退(仅长度>=5的候选, 防误抓)
+CAND = {
+    "deposit":   ["deposit", "deposit_name", "name", "location", "mine", "area", "site", "target"],
+    "category":  ["category", "class", "classification", "resource_class", "confidence"],
+    "tonnes":    ["tonnes_mt", "tonnes", "tonnage", "tonnes_million", "mt"],
+    "grade":     ["grade_gpt", "grade", "au_gpt", "grade_au", "au_grade", "gpt"],
+    "contained": ["contained_moz", "contained", "moz", "contained_oz", "au_moz", "ounces_moz"],
+    "page":      ["source_page", "page", "page_no", "page_number", "pdf_page"],
+    "basis":     ["basis", "reporting_basis", "basis_of_reporting"],
+}
 
-def within_tol(p, g, tol=TOLERANCE):
-    if p is None or g is None: return False
-    p, g = float(p), float(g)
-    if g == 0: return math.isclose(p, 0.0, abs_tol=1e-9)
-    return abs(p - g) / abs(g) <= tol
+# 冒烟测试 GT: 第17页十条, 每个数字均经页面原文人工对账核验
+DEMO_GT = [
+    {"deposit": "Open Pits", "category": "M&I", "tonnes_mt": 120, "grade_gpt": 1.99, "contained_moz": 7.9, "page": 17},
+    {"deposit": "Open Pits", "category": "Inferred", "tonnes_mt": 42, "grade_gpt": 1.2, "contained_moz": 1.7, "page": 17},
+    {"deposit": "Carlin Stockpiles", "category": "Measured", "tonnes_mt": 14, "grade_gpt": 1.29, "contained_moz": 0.59, "page": 17},
+    {"deposit": "Carlin Stockpiles", "category": "Indicated", "tonnes_mt": 32, "grade_gpt": 2.34, "contained_moz": 2.4, "page": 17},
+    {"deposit": "Carlin Stockpiles", "category": "M&I", "tonnes_mt": 47, "grade_gpt": 2.02, "contained_moz": 3, "page": 17},
+    {"deposit": "Carlin Stockpiles", "category": "Inferred", "tonnes_mt": 4.5, "grade_gpt": 1.9, "contained_moz": 0.27, "page": 17},
+    {"deposit": "Underground", "category": "Measured", "tonnes_mt": 0.14, "grade_gpt": 8.55, "contained_moz": 0.038, "page": 17},
+    {"deposit": "Underground", "category": "Indicated", "tonnes_mt": 54, "grade_gpt": 7.92, "contained_moz": 14, "page": 17},
+    {"deposit": "Underground", "category": "M&I", "tonnes_mt": 55, "grade_gpt": 7.93, "contained_moz": 14, "page": 17},
+    {"deposit": "Underground", "category": "Inferred", "tonnes_mt": 31, "grade_gpt": 7.3, "contained_moz": 7.3, "page": 17},
+]
 
-def evaluate(gt, preds, verbose=True):
-    gt_by = {norm(r["deposit"]): r for r in gt}
-    pred_keys = {norm(p["deposit"]) for p in preds}
-    missing = [r["deposit"] for k, r in gt_by.items() if k not in pred_keys]
 
-    detail, extra = [], []
-    n_fields = n_ok = n_abstain = 0
+def norm_name(s):
+    return re.sub(r"[^a-z0-9]+", "", str(s or "").lower())
 
-    for p in preds:
-        g = gt_by.get(norm(p["deposit"]))
-        if g is None:
-            extra.append(p["deposit"]); continue          # 多抽/幻觉矿点
-        if p.get("status") == "abstain":
-            n_abstain += 1
-            detail.append({"deposit": p["deposit"], "status": "abstain", "fields": {}})
-            continue                                       # 弃权不计错字段
-        rec = {"deposit": p["deposit"], "status": "ok", "fields": {}}
-        for pf, gf in NUMERIC_FIELDS.items():
-            n_fields += 1
-            ok = within_tol(p.get(pf), g.get(gf))
-            n_ok += ok
-            rec["fields"][pf] = {"pred": p.get(pf), "gt": g.get(gf), "ok": ok}
-        for f in EXACT_FIELDS:
-            if f in p or f in g:
-                n_fields += 1
-                ok = p.get(f) == g.get(f)
-                n_ok += ok
-                rec["fields"][f] = {"pred": p.get(f), "gt": g.get(f), "ok": ok}
-        detail.append(rec)
 
-    summary = {
-        "field_accuracy": round(n_ok / n_fields, 4) if n_fields else None,
-        "fields_correct": n_ok, "fields_total": n_fields,
-        "fields_wrong": n_fields - n_ok,          # ← 题面最看的"错误硬给"指标
-        "abstain_count": n_abstain,
-        "missing_in_pred": missing,
-        "extra_in_pred": extra,
-    }
-    if verbose:
-        print(json.dumps(summary, ensure_ascii=False, indent=2))
-        for d in detail:
-            bad = {k: v for k, v in d["fields"].items() if not v["ok"]}
-            mark = "⏸ abstain" if d["status"] == "abstain" else ("❌ " + str(bad) if bad else "✅")
-            print(f"{mark:60s} {d['deposit']}")
-    return summary, detail
+def norm_cat(s):
+    if not s:
+        return None
+    t = re.sub(r"[^a-z&+ ]+", "", str(s).lower()).strip()
+    if t in ("m&i", "m+i", "mi", "m and i", "measured & indicated",
+             "measured and indicated", "measured + indicated"):
+        return "M&I"
+    if "measur" in t and "indic" in t:
+        return "M&I"
+    if "measur" in t:
+        return "Measured"
+    if "indic" in t:
+        return "Indicated"
+    if "inferred" in t:
+        return "Inferred"
+    return str(s).strip()
+
+
+def to_number(v):
+    if v is None:
+        return None
+    if isinstance(v, (int, float)):
+        return float(v)
+    s = str(v).strip().replace(",", "")
+    if s in ("", "-", "n/a", "N/A", "null", "None"):
+        return None
+    s = re.sub(r"[^0-9.\-]", "", s)          # 剥单位: "1.2 g/t" -> "1.2"
+    try:
+        return float(s)
+    except ValueError:
+        return None
+
+
+def to_mt(v):
+    return None if v is None else (v / 1e6 if v > 1e4 else v)
+
+
+def to_moz(v):
+    return None if v is None else (v / 1e6 if v > 1e3 else v)
+
+
+def detect_fields(rows):
+    keys = set()
+    for r in rows[:50]:
+        if isinstance(r, dict):
+            keys.update(k for k in r.keys())
+    if GT_FIELD_MAP:
+        return dict(GT_FIELD_MAP)
+    f, claimed = {}, set()
+    for canon, cands in CAND.items():
+        for c in cands:                                   # 第一遍: 精确同名
+            hit = next((k for k in keys if k not in claimed and k.lower().strip() == c), None)
+            if hit:
+                f[canon], _ = hit, claimed.add(hit)
+                break
+        if canon not in f:                                # 第二遍: 长候选子串
+            for k in sorted(keys):
+                kl = k.lower()
+                if k in claimed:
+                    continue
+                if any(len(c) >= 5 and c in kl for c in cands):
+                    f[canon], _ = k, claimed.add(k)
+                    break
+    return f
+
+
+def load_gt(path):
+    text = path.read_text(encoding="utf-8")
+    try:
+        obj = json.loads(text)
+    except json.JSONDecodeError:
+        return [json.loads(l) for l in text.splitlines() if l.strip()]   # JSONL
+    if isinstance(obj, list):
+        return obj
+    if isinstance(obj, dict):
+        for k in ("records", "data", "resources", "rows", "items"):
+            if isinstance(obj.get(k), list):
+                return obj[k]
+        if any(k in obj for k in ("deposit", "name", "location")):
+            return [obj]
+    raise SystemExit("无法识别 GT 结构: 需要数组、JSONL 或含 records/data 键的对象")
+
+
+def build_gt_rows(raw):
+    fmap = detect_fields(raw)
+    print("GT 字段映射:", {c: fmap[c] for c in fmap} or "(空!) 填 GT_FIELD_MAP 重跑")
+    rows, skipped = [], 0
+    for r in raw:
+        if not isinstance(r, dict):
+            continue
+        dep = r.get(fmap.get("deposit", ""))
+        if dep is None:
+            continue
+        if "total" in norm_name(dep):                     # 聚合行不计分(与抽取规则对称)
+            skipped += 1
+            continue
+        t = to_number(r.get(fmap.get("tonnes", "@")))
+        rows.append({
+            "deposit": str(dep).strip(),
+            "category": norm_cat(r.get(fmap.get("category", "@"))),
+            "page": r.get(fmap.get("page", "@")),
+            "basis": r.get(fmap.get("basis", "@")),
+            "tonnes": to_mt(t),
+            "grade": to_number(r.get(fmap.get("grade", "@"))),
+            "contained": to_moz(to_number(r.get(fmap.get("contained", "@")))),
+        })
+    return rows, skipped, fmap
+
+
+def name_sim(a, b):
+    a, b = norm_name(a), norm_name(b)
+    if not a or not b:
+        return 0.0
+    if a == b:
+        return 1.0
+    r = SequenceMatcher(None, a, b).ratio()
+    if (a in b or b in a) and min(len(a), len(b)) >= 4:
+        r = max(r, 0.9)
+    return r
+
+
+def match(gt_rows, pred_rows):
+    pairs = []
+    for gi, g in enumerate(gt_rows):
+        for pi, p in enumerate(pred_rows):
+            sim = name_sim(g["deposit"], p["deposit"])
+            if sim < MATCH_SIM:
+                continue
+            score = sim
+            if g["category"] and p["category"]:
+                score += 0.3 if g["category"] == p["category"] else -0.2
+            if g["page"] is not None and p.get("page") is not None:
+                score += 0.1 if int(g["page"]) == int(p["page"]) else -0.1
+            # 数值一致性作决胜项: 同一页同名不同 section(如 Surface/Underground 都叫 Goldstrike)
+            # 的两行, 只有靠数值才能正确配对, 否则会凭空产生"字段不符"误报。
+            numeric = [k for k in ("tonnes", "grade", "contained")
+                       if g.get(k) is not None and p.get(k) is not None]
+            if numeric and all(field_pass(g[k], p[k]) for k in numeric):
+                score += 0.5
+            pairs.append((score, gi, pi))
+    pairs.sort(reverse=True)
+    used_g, used_p, m = set(), set(), {}
+    for score, gi, pi in pairs:
+        if gi in used_g or pi in used_p:
+            continue
+        used_g.add(gi)
+        used_p.add(pi)
+        m[gi] = pi
+    return m, used_p
+
+
+def field_pass(gt_v, pred_v):
+    if gt_v is None:
+        return None                                       # GT 未给 -> 不计分
+    if pred_v is None:
+        return False
+    if gt_v == 0:
+        return abs(pred_v) < 1e-9
+    return abs(pred_v - gt_v) / abs(gt_v) <= TOLERANCE
+
+
+def basis_pass(gb, pb):
+    if not gb:
+        return None
+    gb, pb = str(gb).lower(), str(pb or "").lower()
+    return ("attribut" in gb) == ("attribut" in pb) and ("100%" in gb) == ("100%" in pb)
+
+
+def main():
+    args = [a for a in sys.argv[1:] if a != "--demo"]
+    demo = "--demo" in sys.argv
+    pred_path = Path(args[1]) if len(args) > 1 else ROOT / "data" / "processed" / "pipeline.records.jsonl"
+
+    pred = [json.loads(l) for l in pred_path.read_text(encoding="utf-8").splitlines() if l.strip()]
+    if demo:
+        gt_raw, src = DEMO_GT, "demo: p17 人工核验真值(冒烟测试)"
+        pred = [r for r in pred if r.get("source_page") == 17]
+    else:
+        gt_path = Path(args[0]) if args else ROOT / "data" / "gt" / "barrick_gt.json"
+        if not gt_path.exists():
+            print(f"未找到 GT 文件 {gt_path}\n最小可用格式(每行一个对象或JSON数组, 字段名自动识别):\n"
+                  '  {"deposit":"Open Pits","category":"Inferred","tonnes_mt":42,'
+                  '"grade_gpt":1.2,"contained_moz":1.7,"page":17}\n'
+                  "也可先跑冒烟测试: python src/evaluate.py --demo")
+            return
+        gt_raw, src = load_gt(gt_path), str(gt_path)
+
+    gt_rows, n_skip, _ = build_gt_rows(gt_raw)
+    pred_rows = [{"deposit": r.get("deposit", ""), "category": norm_cat(r.get("category")),
+                  "page": r.get("source_page"), "basis": r.get("basis"),
+                  "tonnes": r.get("tonnes_mt"), "grade": r.get("grade_gpt"),
+                  "contained": r.get("contained_moz")} for r in pred]
+
+    m, used_p = match(gt_rows, pred_rows)
+    fields = {k: [0, 0] for k in ("category", "tonnes", "grade", "contained", "basis")}
+    details, perfect = [], 0
+    for gi, g in enumerate(gt_rows):
+        det = {"gt": f"{g['deposit']} [{g['category']}]", "matched": gi in m, "fields": {}}
+        if gi in m:
+            p = pred_rows[m[gi]]
+            det["pred"] = f"{p['deposit']} [{p['category']}] p{p['page']}"
+            ok_all = True
+            checks = {"category": (g["category"] is not None, g["category"] == p["category"]),
+                      "tonnes": (g["tonnes"] is not None, field_pass(g["tonnes"], p["tonnes"])),
+                      "grade": (g["grade"] is not None, field_pass(g["grade"], p["grade"])),
+                      "contained": (g["contained"] is not None, field_pass(g["contained"], p["contained"])),
+                      "basis": (g["basis"] is not None, basis_pass(g["basis"], p["basis"]))}
+            for name, (scored, ok) in checks.items():
+                if not scored:
+                    continue
+                fields[name][0] += 1
+                fields[name][1] += 1 if ok else 0
+                ok_all = ok_all and bool(ok)
+                det["fields"][name] = {"gt": g.get(name), "pred": p.get(name), "pass": bool(ok)}
+            perfect += 1 if ok_all else 0
+        details.append(det)
+
+    tot = sum(v[0] for v in fields.values())
+    cor = sum(v[1] for v in fields.values())
+    extras = [f"{p['deposit']} [{p['category']}] p{p['page']}"
+              for pi, p in enumerate(pred_rows) if pi not in used_p]
+    miss = [d["gt"] for d in details if not d["matched"]]
+
+    print(f"== evaluate ({'冒烟测试' if demo else '真实GT'}: {src}) ==")
+    print(f"GT 记录 {len(gt_rows)} 条 (跳过聚合 {n_skip}) | 抽取记录 {len(pred_rows)} 条")
+    print(f"匹配 {len(m)}/{len(gt_rows)} | GT 未匹配 {len(miss)} | 抽取富余 {len(extras)}"
+          f"(富余含 GT 未覆盖页的记录, 不扣分)")
+    if miss:
+        print("GT 未匹配(核对字段映射/名称):", miss[:8])
+    print(f"字段级准确率 (±{int(TOLERANCE*100)}%): {cor}/{tot} = {cor/tot*100 if tot else 0:.1f}%")
+    for name in ("category", "tonnes", "grade", "contained", "basis"):
+        n, c = fields[name]
+        if n:
+            print(f"  {name:<9}: {c}/{n}")
+    print(f"记录级全对: {perfect}/{len(m)}")
+
+    report = {"source": src, "tolerance": TOLERANCE,
+              "summary": {"gt_records": len(gt_rows), "matched": len(m), "field_total": tot,
+                          "field_correct": cor, "field_accuracy": round(cor / tot, 4) if tot else None,
+                          "perfect_records": perfect, "skipped_aggregates": n_skip,
+                          "per_field": {k: {"scored": v[0], "correct": v[1]} for k, v in fields.items() if v[0]}},
+              "unmatched_gt": miss, "extra_pred": extras, "details": details}
+    out = ROOT / "data" / "processed" / "eval_report.json"
+    out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"报告 -> {out}")
+
+    ev = {"ts": time.strftime("%Y-%m-%d %H:%M:%S"), "page": "all",
+          "kind": "gt_eval", "detail": report["summary"],
+          "lesson": "" if demo else f"GT对账 字段级准确率 {cor}/{tot}"}
+    with (ROOT / "data" / "evolution.jsonl").open("a", encoding="utf-8") as f:
+        f.write(json.dumps(ev, ensure_ascii=False) + "\n")
+
 
 if __name__ == "__main__":
-    ROOT = Path(__file__).resolve().parents[1]  # 锚定仓库根,不管从哪儿运行都对
-    gt = json.loads((ROOT / "data/ground_truth/fake_gt.json").read_text(encoding="utf-8"))
-    preds = json.loads(json.dumps(gt))  # 深拷贝当"完美预测"
-
-    preds[0]["grade_gpt"] = round(preds[0]["grade_gpt"] * 1.03, 3)   # +3%   → 应放行
-    preds[1]["tonnes_mt"] = round(preds[1]["tonnes_mt"] * 1.08, 3)   # +8%   → 应抓出
-    preds[2]["contained_moz"] = None                                  # 缺字段 → 应抓出
-    preds[4]["status"] = "abstain"                                    # 弃权   → 不计错
-    preds.append({**preds[0], "deposit": "Ghost Deposit"})            # 幻觉   → extra
-
-    s, _ = evaluate(gt, preds)
-    assert s["fields_wrong"] == 2,       f"应抓出2个错,实际{s['fields_wrong']}"
-    assert s["abstain_count"] == 1
-    assert s["extra_in_pred"] == ["Ghost Deposit"]
-    assert s["field_accuracy"] == 0.875  # 16个计分字段,错2 → 14/16
-    print("\n=== 尺子自测通过:该抓的抓了,该放的放了,abstain没被冤枉 ===")
+    main()

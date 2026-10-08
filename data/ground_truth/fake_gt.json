@@ -1,7 +1,0 @@
-[
-  {"deposit": "Leeville",          "category": "M&I", "tonnes_mt": 28.0, "grade_gpt": 7.82, "contained_moz": 7.0},
-  {"deposit": "Gold Quarry",       "category": "M&I", "tonnes_mt": 89.0, "grade_gpt": 1.99, "contained_moz": 5.7},
-  {"deposit": "Goldstrike OP",     "category": "M&I", "tonnes_mt": 12.0, "grade_gpt": 9.99, "contained_moz": 4.0},
-  {"deposit": "Carlin Stockpiles", "category": "M&I", "tonnes_mt": 47.0, "grade_gpt": 2.02, "contained_moz": 3.0},
-  {"deposit": "Rita K",            "category": "M&I", "tonnes_mt": 4.4,  "grade_gpt": 7.01, "contained_moz": 0.99}
-]

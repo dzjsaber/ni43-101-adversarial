@@ -45,13 +45,22 @@ Rules:
 - Column groups are ordered: Measured, Indicated, Measured + Indicated (= M&I), Inferred.
   Map each value to the correct category.
 - One record per (location, category) that has at least one real number.
+- Emit EVERY column group that carries a number, EVEN IF its values are identical to
+  another group (e.g. Indicated == Measured + Indicated). Never drop or merge a group
+  because it duplicates a neighbour: when Indicated, M&I and Inferred are all printed
+  for a location, all three must appear in the output.
+- Row names may be split across several lines ("Carlin" / "12.3 4.5 6.7" / "Stockpiles"):
+  join the fragments into ONE name. A line reading only "Total" that comes AFTER the
+  numbers belongs to the row above and marks that row as an aggregate -> skip it.
 - "-" or blank cell -> null. Copy numbers EXACTLY (0.083 stays 0.083, 3 stays 3).
 - Skip rows whose name contains "Total" (aggregates).
 - Extract only RESOURCE tables. If the page holds a RESERVE table (Proven/Probable),
   a production table, or no table at all, output [].
 - If a number is garbled or unreadable, omit it (null); never guess."""
 
-# few-shot 用第191页的真实表格行:教 空值/四类映射/跳Total/精确抄数
+# few-shot 用第191页的真实表格行:教 空值/四类映射/跳Total/精确抄数。
+# 注意: 示例里必须包含"Indicated 与 M&I 数值相同仍然单独出记录"的正例, 否则模型会学到
+# "两列相同时省略 Indicated" —— 这正是旧版本 p191/p192 每页漏掉 11 条 Indicated 记录的原因。
 FEWSHOT_USER = """Table 14-21 Carlin Mineral Resource Statement, 100% Basis, December 31, 2024
 Measured Indicated Measured + Indicated Inferred
 Location Tonnes Grade Contained Tonnes Grade Contained Tonnes Grade Contained Tonnes Grade Contained
@@ -63,8 +72,10 @@ Carlin Stockpiles 14 1.29 0.59 32 2.34 2.4 47 2.02 3 4.5 1.9 0.27
 Open Pit Total - - - 120 1.99 7.9 120 1.99 7.9 42 1.2 1.7"""
 
 FEWSHOT_ASSISTANT = """[
+  {"deposit": "Gold Quarry", "category": "Indicated", "tonnes_mt": 89, "grade_gpt": 1.99, "contained_moz": 5.7, "basis": "100% Basis"},
   {"deposit": "Gold Quarry", "category": "M&I", "tonnes_mt": 89, "grade_gpt": 1.99, "contained_moz": 5.7, "basis": "100% Basis"},
   {"deposit": "Gold Quarry", "category": "Inferred", "tonnes_mt": 36, "grade_gpt": 1.2, "contained_moz": 1.4, "basis": "100% Basis"},
+  {"deposit": "Goldstar", "category": "Indicated", "tonnes_mt": 5.1, "grade_gpt": 2.05, "contained_moz": 0.34, "basis": "100% Basis"},
   {"deposit": "Goldstar", "category": "M&I", "tonnes_mt": 5.1, "grade_gpt": 2.05, "contained_moz": 0.34, "basis": "100% Basis"},
   {"deposit": "Goldstar", "category": "Inferred", "tonnes_mt": 1.6, "grade_gpt": 1.6, "contained_moz": 0.083, "basis": "100% Basis"},
   {"deposit": "Carlin Stockpiles", "category": "Measured", "tonnes_mt": 14, "grade_gpt": 1.29, "contained_moz": 0.59, "basis": "100% Basis"},

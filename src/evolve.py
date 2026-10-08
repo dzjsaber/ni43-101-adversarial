@@ -34,7 +34,8 @@ CRITIC_TEMPLATES = [
              "in EXTRACTED RECORDS. If you see one, flag it as an extra aggregate record."),
 ]
 BOOKEND = {"selftest_start", "selftest_end"}
-REAL_KINDS = {"critic_false_positive", "revise", "abstain", "pipeline_error"}
+REAL_KINDS = {"critic_false_positive", "revise", "abstain", "pipeline_error", "deliverable_filter"}
+MAX_DRILL_SPAN = 40      # 安全阀: 演习若中途崩溃(没有 selftest_end), 最多吞 40 条, 不得永久污染规则库
 
 
 def load_events(path: Path):
@@ -43,17 +44,23 @@ def load_events(path: Path):
 
 def mark_drill_windows(events):
     """selftest_start..selftest_end 之间的条目标记为演习数据, 不作教训"""
-    flags, inside = [], False
+    flags, inside, span = [], False, 0
     for e in events:
         if e.get("kind") == "selftest_start":
-            inside = True
+            inside, span = True, 0
         flags.append(inside)
         if e.get("kind") == "selftest_end":
             inside = False
+        if inside:
+            span += 1
+            if span > MAX_DRILL_SPAN:        # 演习异常中断: 之后的事件按真实失败处理
+                inside = False
     return flags
 
 
-def distill(events, drill_flags, templates):
+def distill(events, drill_flags, templates, freeform_kinds=REAL_KINDS):
+    """freeform_kinds: 允许把 lesson 原文注入 prompt 的事件类型。
+    抽取端不吸收 critic 的教训 —— 否则等于教抽取器"别理 critic 的指控"。"""
     rules, hits, seen = [], Counter(), set()
     for e, drill in zip(events, drill_flags):
         if drill or e.get("kind") not in REAL_KINDS:
@@ -64,7 +71,7 @@ def distill(events, drill_flags, templates):
                 rules.append(rule)
                 hits[key] += 1
         raw = e.get("lesson", "")
-        if len(raw) > 20 and raw not in rules and raw not in seen:
+        if e.get("kind") in freeform_kinds and len(raw) > 20 and raw not in rules and raw not in seen:
             seen.add(raw)
             rules.append("Context: " + raw)
     return rules, hits
@@ -91,7 +98,9 @@ def main():
           f"真实失败 {len(events) - n_drill} 条")
     print("kinds:", dict(Counter(e["kind"] for e, d in zip(events, drill_flags) if not d)))
 
-    ext_rules, ext_hits = distill(events, drill_flags, EXTRACTOR_TEMPLATES)
+    ext_rules, ext_hits = distill(events, drill_flags, EXTRACTOR_TEMPLATES,
+                                  freeform_kinds={"revise", "abstain", "pipeline_error",
+                                                  "deliverable_filter"})
     crit_rules, crit_hits = distill(events, drill_flags, CRITIC_TEMPLATES)
     n_real = len(events) - n_drill
     write_rules(ROOT / "data" / "evolved_rules.txt",

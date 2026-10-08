@@ -1,5 +1,7 @@
 # Extractor rules distilled from real failures
-# generated 2026-10-09 00:45:50 from 1 real failure events (drill windows excluded); template hits: {'版式': 1}
+# generated 2026-10-09 02:20:33 from 12 real failure events (drill windows excluded); template hits: {'版式': 1, 'Total': 1}
 
 1. Tables vary in layout (summary tables in Section 1 differ from Chapter 14): locate each column group header first, then map values by position.
-2. Context: critic 对摘要表版式(行名拆行/数值列重复)误报; 指控须能被页面原文+稳定复抽佐证, 否则仲裁驳回
+2. Skip aggregate rows: any row whose name contains Total, and grand-total rows where the word Total is printed on a separate line AFTER the numbers (the row itself may carry a plain name like 'Carlin Complex'). A row that is the sum of other listed rows is never a record.
+3. Context: Underground (Measured): 原文该行是聚合行(Total), 不得作为矿点记录 | Underground (Indicated): 原文该行是聚合行(Total), 不得作为矿点记录 | Underground (M&I): 原文该行是聚合行(Total), 不得作为矿点记录
+4. Context: 聚合行(Total)/摘要组行/跨页重复不得进交付物: 由代码在交付前剔除或标注并留痕

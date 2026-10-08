@@ -15,6 +15,7 @@ from pathlib import Path
 
 import critic
 import extractor
+import guards
 
 ROOT = Path(__file__).resolve().parents[1]
 AU_OZ_PER_T = 31.1035
@@ -101,8 +102,12 @@ def run_page(page, ds_key, zp_key):
     crit = {"score": 0, "issues": []}
 
     for round_no in range(MAX_ROUNDS + 1):          # 最多4次评分(初始+3轮返工)
-        cons = conservation_issues(recs)
-        crit = critique_once(zp_key, page_text, recs)
+        cons = conservation_issues(recs) + guards.structural_issues(recs, page)
+        if recs:                                     # 列组完整性: 防止整列 Indicated 漏抽
+            missing = guards.column_coverage(recs, page)
+            if missing:
+                cons = cons + [f"列组缺失 {missing}: 原文表头有这些列组, 输出里没有对应记录"]
+        crit = guards.filter_claims(critique_once(zp_key, page_text, recs), recs, page_text)
         last_issues = cons + crit["issues"]
 
         if crit["score"] >= 8 and not cons:
@@ -152,9 +157,13 @@ def main(pages_path):
         sys.exit("缺少环境变量: " + ", ".join(missing) + " (setx 后需重开终端)")
 
     pages = [json.loads(l) for l in pages_path.read_text(encoding="utf-8").splitlines() if l.strip()]
-    todo = sorted([p for p in pages if p["score"] >= MIN_SCORE],
-                  key=lambda p: -p["score"])[:MAX_PAGES]
+    eligible = sorted([p for p in pages if p["score"] >= MIN_SCORE], key=lambda p: -p["score"])
+    todo = eligible[:MAX_PAGES]
     print(f"对抗管线启动: {len(todo)} 页 (score>={MIN_SCORE})")
+    if len(eligible) > len(todo):                    # 截断必须显式告警, 不能静默丢页
+        dropped = [f"p{p['page']}(score={p['score']})" for p in eligible[len(todo):]]
+        print(f"  !! 警告: MAX_PAGES={MAX_PAGES} 截断, {len(dropped)} 个高分候选页未处理: "
+              f"{', '.join(dropped[:20])}{' ...' if len(dropped) > 20 else ''}")
 
     ok_path = ROOT / "data" / "processed" / "pipeline.records.jsonl"
     ab_path = ROOT / "data" / "processed" / "abstain.jsonl"
@@ -187,8 +196,12 @@ def main(pages_path):
                     f_ok.write(json.dumps(r, ensure_ascii=False) + "\n")
             else:
                 n_ab += 1
-                f_ab.write(json.dumps({"page": page["page"], "reason": res["verdict"],
-                                       "rounds": res["rounds"], "critic_score": res["score"],
+                f_ab.write(json.dumps({"page": page["page"], "abstain": True,
+                                       "mark_for_human": True,
+                                       "reason": res["verdict"],
+                                       "rounds": res["rounds"],
+                                       "last_score": res["score"],
+                                       "critic_score": res["score"],
                                        "issues": res.get("issues", []),
                                        "last_records": recs}, ensure_ascii=False) + "\n")
             time.sleep(1)
@@ -196,6 +209,30 @@ def main(pages_path):
     print(f"\nOK: 接受 {n_ok} 页 -> {ok_path}")
     print(f"    弃权 {n_ab} 页 -> {ab_path} (待人工审核)")
     print("    失败/误报案例已追加 -> data/evolution.jsonl")
+
+    # 交付前确定性终审: 聚合行/摘要组行剔除 + 跨页重复标注(不删数据, 单列留痕供人复核)
+    accepted = [json.loads(l) for l in ok_path.read_text(encoding="utf-8").splitlines() if l.strip()]
+    stamped, detail = guards.split_deliverable(accepted, pages)
+    non_detail = [r for r in stamped if r["record_class"] != "detail"]
+    detail_path = ROOT / "data" / "processed" / "pipeline.detail.jsonl"
+    with ok_path.open("w", encoding="utf-8") as f:
+        for r in stamped:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    with detail_path.open("w", encoding="utf-8") as f:
+        for r in detail:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    if non_detail:
+        log_evol({"ts": time.strftime("%Y-%m-%d %H:%M:%S"), "page": "all",
+                  "kind": "deliverable_filter",
+                  "detail": [[r["record_class"], r["deposit"], r["category"], r["source_page"]]
+                             for r in non_detail],
+                  "lesson": "聚合行(Total)/摘要组行/跨页重复不得进交付物: 由代码在交付前剔除或标注并留痕"})
+    by_class = {}
+    for r in stamped:
+        by_class[r["record_class"]] = by_class.get(r["record_class"], 0) + 1
+    n_dup = sum(1 for r in stamped if r.get("duplicate_of_page"))
+    print(f"    终审分类: {by_class} (跨页重复标注 {n_dup} 条); "
+          f"可交付明细 {len(detail)} 条 -> {detail_path}")
 
 
 if __name__ == "__main__":
