@@ -101,8 +101,9 @@ def main():
         tools = [t["name"] for t in r.get("result", {}).get("tools", [])]
         print(f"   暴露工具: {tools}")
         need = {"list_reports", "deliverable_summary", "needs_human_review", "top_deposits",
-                "records_for_page", "run_pipeline", "evaluate_gt", "run_fault_drill"}
-        check(need <= set(tools) and len(tools) == 8, f"工具数量与名称正确({len(tools)} 个)")
+                "records_for_page", "run_pipeline", "evaluate_gt", "run_fault_drill",
+                "list_report_configs"}
+        check(need <= set(tools) and len(tools) == 9, f"工具数量与名称正确({len(tools)} 个)")
 
         print("3. 只读工具(离线, 免费)")
         r = s.call(3, "tools/call", {"name": "deliverable_summary", "arguments": {}})

@@ -23,6 +23,8 @@ import sys
 from collections import Counter
 from pathlib import Path
 
+import report_config
+
 ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = (ROOT / "data" / "reports").resolve()
 PROCESSED = ROOT / "data" / "processed"
@@ -109,16 +111,30 @@ def deliverable_summary() -> str:
 
 def top_deposits(category: str = "M&I", n: int = 5, basis: str = "100%") -> str:
     """按金属量排序列出前 N 个矿点(只读)。basis: '100%' 或 'Barrick'。"""
-    recs = [r for r in _load("pipeline.detail.jsonl")
+    recs = [report_config.normalize(r) for r in _load("pipeline.detail.jsonl")]
+    recs = [r for r in recs
             if r.get("category") == category
             and (("attribut" in str(r.get("basis", "")).lower()) == ("barrick" in basis.lower()))
-            and r.get("contained_moz") is not None]
-    recs.sort(key=lambda r: r["contained_moz"], reverse=True)
+            and r.get("metal") is not None]
+    recs.sort(key=lambda r: r["metal"], reverse=True)
     if not recs:
         return f"没有匹配记录(category={category}, basis={basis})"
     return "\n".join(f"{i+1}. {r['deposit']} [{r['category']}] {r['tonnes_mt']} Mt @ "
-                     f"{r['grade_gpt']} g/t = {r['contained_moz']} Moz (p{r['source_page']})"
+                     f"{r['grade']} {r['grade_unit']} = {r['metal']} {r['metal_unit']} "
+                     f"(p{r['source_page']})"
                      for i, r in enumerate(recs[:n]))
+
+
+def list_report_configs() -> str:
+    """列出每份报告的商品/单位/守恒因子配置(只读, 免费)。新增报告就在这里补配置。"""
+    pdfs = sorted(REPORTS_DIR.glob("*.pdf")) if REPORTS_DIR.exists() else []
+    if not pdfs:
+        return f"白名单 {REPORTS_DIR} 内没有 PDF"
+    lines = []
+    for pdf in pdfs:
+        cfg = report_config.load(pdf)
+        lines.append(f"- {pdf.name}: {report_config.summarize(cfg)}")
+    return "报告配置:\n" + "\n".join(lines)
 
 
 def records_for_page(page: int) -> str:
@@ -298,6 +314,9 @@ def tool_definitions():
              "confirm": {"type": "boolean", "default": False},
              "always": {"type": "boolean", "default": True}},
              "additionalProperties": False}},
+        {"name": "list_report_configs",
+         "description": "列出每份报告的商品/单位/守恒因子配置(只读, 免费)",
+         "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False}},
     ]
 
 
@@ -310,6 +329,7 @@ TOOLS = {
     "run_pipeline": run_pipeline,
     "evaluate_gt": evaluate_gt,
     "run_fault_drill": run_fault_drill,
+    "list_report_configs": list_report_configs,
 }
 
 

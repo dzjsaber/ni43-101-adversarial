@@ -14,6 +14,8 @@ import itertools
 import json
 import re
 
+import report_config
+
 NUM = re.compile(r"^-?\d+(?:\.\d+)?$")
 
 
@@ -78,12 +80,13 @@ def structural_issues(recs, page):
       2) 吨/品位/金属三元组残缺(该行在原文里齐全, 抽取只填了部分)
       3) M&I 与 Measured+Indicated 不自洽 => 列映射错位
     """
+    recs = report_config.normalize_all(recs)      # 兼容旧字段名(grade_gpt/contained_moz)
     out = []
     agg = {_norm(r["name"]) for r in detect_aggregate_rows(page["text_lines"]) if r["name"]}
     for r in recs:
         if _norm(r.get("deposit")) and _norm(r["deposit"]) in agg:
             out.append(f"{r['deposit']} ({r.get('category')}): 原文该行是聚合行(Total), 不得作为矿点记录")
-        t, g, c = r.get("tonnes_mt"), r.get("grade_gpt"), r.get("contained_moz")
+        t, g, c = r.get("tonnes_mt"), r.get("grade"), r.get("metal")
         if any(v is not None for v in (t, g, c)) and not (t is not None and c is not None):
             out.append(f"{r['deposit']} ({r.get('category')}): 三元组残缺 t={t} g={g} c={c}, 需回读原文")
     groups = {}
@@ -91,7 +94,7 @@ def structural_issues(recs, page):
         groups.setdefault((_norm(r.get("deposit")), r.get("basis")), {})[r.get("category")] = r
     for _key, cats in groups.items():
         m, i, mi = cats.get("Measured"), cats.get("Indicated"), cats.get("M&I")
-        for field in ("tonnes_mt", "contained_moz"):
+        for field in ("tonnes_mt", "metal"):
             if mi and m and i and all(x.get(field) is not None for x in (m, i, mi)):
                 expect, got = m[field] + i[field], mi[field]
                 if got and abs(expect - got) / got > 0.10:
@@ -105,6 +108,7 @@ def filter_claims(crit, recs, page_text):
     机械核验 critic 的每条指控: 若它指控的字段值在页面原文里逐字存在 => 误报, 代码驳回。
     (实测 p17 的三条指控全属此类; 全部驳回后按原文复原满分)
     """
+    recs = report_config.normalize_all(recs)
     keep, rejected = [], []
     words = set(page_text.replace("\n", " ").split())
     for claim in crit.get("issues", []):
@@ -113,7 +117,7 @@ def filter_claims(crit, recs, page_text):
             if _norm(r.get("deposit")) not in _norm(str(claim)):
                 continue
             matched_any = True
-            vals = [v for v in (r.get("tonnes_mt"), r.get("grade_gpt"), r.get("contained_moz"))
+            vals = [v for v in (r.get("tonnes_mt"), r.get("grade"), r.get("metal"))
                     if v is not None]
             if vals and all(any(t in words or t in page_text for t in (f"{v:g}", f"{v:g}.0"))
                             for v in vals):
@@ -150,7 +154,7 @@ def classify_records(recs, pages):
         names_per_page.setdefault(r.get("source_page"), set()).add(_norm(r.get("deposit")))
     summary_page = {pg: len(names) <= 4 for pg, names in names_per_page.items()}
     seen, stamped = {}, []
-    for r in recs:
+    for r in report_config.normalize_all(recs):
         r = dict(r)
         if _norm(r.get("deposit")) in agg_names.get(r.get("source_page"), set()):
             r["record_class"] = "aggregate"
@@ -159,7 +163,7 @@ def classify_records(recs, pages):
         else:
             r["record_class"] = "detail"
         key = ((_norm(r.get("deposit")), r.get("category"))
-               + (r.get("tonnes_mt"), r.get("grade_gpt"), r.get("contained_moz")))
+               + (r.get("tonnes_mt"), r.get("grade"), r.get("metal")))
         first = seen.get(key)
         if first is None:
             seen[key] = r.get("source_page")

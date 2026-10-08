@@ -13,10 +13,15 @@ from pathlib import Path
 
 import requests
 
+import report_config
+
 ROOT = Path(__file__).resolve().parents[1]
 API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
 MODEL = "glm-4-flash"      # 免费档; 不够犀利可换 glm-4-plus
 RETRIES = 3
+
+
+_CFG = dict(report_config.DEFAULT)
 
 
 def _evolved_rules() -> str:
@@ -28,19 +33,20 @@ def _evolved_rules() -> str:
     return ""
 
 
-CRITIC_SYSTEM = """You are a strict auditing critic (CriticMaster) for mineral-resource data extraction.
+CRITIC_TEMPLATE = """You are a strict auditing critic (CriticMaster) for mineral-resource data extraction.
 You receive: (A) text lines of ONE PDF page, (B) the records an extractor produced from that page (may be empty).
 Audit B against A and score 1-10. Output ONLY a JSON object, no fences, no commentary:
 {"score": <integer 1-10>, "issues": ["<specific problem, mention the record/deposit name>"]}
 
 Checks, in order of severity:
 1. Hallucination: a record whose deposit or numbers do not exist on the page -> -3 each.
-2. Wrong number: any tonnes/grade/contained value differing from the page text -> -2 each.
+2. Wrong number: any tonnes/grade/metal value differing from the page text -> -2 each.
 3. Wrong category: value mapped to the wrong column group (Measured / Indicated / M&I / Inferred) -> -1.
 4. Wrong basis: record's basis does not match the table caption
    (e.g. '100% Basis' vs 'Barrick Attributable Basis') -> -1.
 5. Missing rows: obvious data rows on the page absent from B (ignore rows whose name contains Total) -> -1 each.
-6. Physics: for Au, contained_moz should equal tonnes_mt * grade_gpt / 31.1035 within ~10% -> -1 per violation.
+6. Physics: metal should equal tonnes_mt * grade * {factor} (units: {grade_unit} / {metal_unit})
+   within ~{tol}% -> -1 per violation.
 
 If B is empty: check whether the page actually contains a resource table with data rows.
 If yes, that is a MISSING PAGE issue (-4) and say so explicitly.
@@ -48,6 +54,27 @@ If the page holds only reserves/production/notes, an empty result is CORRECT and
 
 Scoring: start at 10, apply deductions, floor at 1. Score >= 8 means acceptable.
 Never invent issues you cannot point to in the page text."""
+
+
+
+def _render(template: str, cfg: dict) -> str:
+    """显式替换(不用 str.format): prompt 里含 JSON 花括号。"""
+    for key, val in (("factor", f"{cfg['contained_factor']:.8g}"),
+                     ("grade_unit", cfg["grade_unit"]), ("metal_unit", cfg["metal_unit"]),
+                     ("tol", int(cfg["tolerance"] * 100))):
+        template = template.replace("{" + key + "}", str(val))
+    return template
+
+
+CRITIC_SYSTEM = _render(CRITIC_TEMPLATE, _CFG)
+
+
+def use_config(cfg=None):
+    """切换报告配置, 让物理规则与单位跟着商品走。"""
+    global _CFG, CRITIC_SYSTEM
+    _CFG = dict(cfg or report_config.DEFAULT)
+    CRITIC_SYSTEM = _render(CRITIC_TEMPLATE, _CFG)
+    return _CFG
 
 
 def call_glm(user_text: str, api_key: str) -> str:
@@ -84,6 +111,7 @@ def main(pages_path: Path, extracted_path: Path):
     if not api_key:
         sys.exit('未找到 ZHIPU_API_KEY。设置: setx ZHIPU_API_KEY "你的key" 然后重开终端')
 
+    print("报告配置: " + report_config.summarize(use_config(report_config.load(pages_path))))
     pages = {p["page"]: p for p in
              (json.loads(l) for l in pages_path.read_text(encoding="utf-8").splitlines() if l.strip())}
     recs_by_page = {}

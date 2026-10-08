@@ -26,25 +26,15 @@ CAND = {
     "deposit":   ["deposit", "deposit_name", "name", "location", "mine", "area", "site", "target"],
     "category":  ["category", "class", "classification", "resource_class", "confidence"],
     "tonnes":    ["tonnes_mt", "tonnes", "tonnage", "tonnes_million", "mt"],
-    "grade":     ["grade_gpt", "grade", "au_gpt", "grade_au", "au_grade", "gpt"],
-    "contained": ["contained_moz", "contained", "moz", "contained_oz", "au_moz", "ounces_moz"],
+    "grade":     ["grade", "grade_gpt", "au_gpt", "grade_au", "au_grade", "gpt", "grade_pct"],
+    "contained": ["metal", "contained_moz", "contained", "moz", "contained_oz", "au_moz",
+                  "ounces_moz", "contained_t", "kt"],
     "page":      ["source_page", "page", "page_no", "page_number", "pdf_page"],
     "basis":     ["basis", "reporting_basis", "basis_of_reporting"],
 }
 
-# 冒烟测试 GT: 第17页十条, 每个数字均经页面原文人工对账核验
-DEMO_GT = [
-    {"deposit": "Open Pits", "category": "M&I", "tonnes_mt": 120, "grade_gpt": 1.99, "contained_moz": 7.9, "page": 17},
-    {"deposit": "Open Pits", "category": "Inferred", "tonnes_mt": 42, "grade_gpt": 1.2, "contained_moz": 1.7, "page": 17},
-    {"deposit": "Carlin Stockpiles", "category": "Measured", "tonnes_mt": 14, "grade_gpt": 1.29, "contained_moz": 0.59, "page": 17},
-    {"deposit": "Carlin Stockpiles", "category": "Indicated", "tonnes_mt": 32, "grade_gpt": 2.34, "contained_moz": 2.4, "page": 17},
-    {"deposit": "Carlin Stockpiles", "category": "M&I", "tonnes_mt": 47, "grade_gpt": 2.02, "contained_moz": 3, "page": 17},
-    {"deposit": "Carlin Stockpiles", "category": "Inferred", "tonnes_mt": 4.5, "grade_gpt": 1.9, "contained_moz": 0.27, "page": 17},
-    {"deposit": "Underground", "category": "Measured", "tonnes_mt": 0.14, "grade_gpt": 8.55, "contained_moz": 0.038, "page": 17},
-    {"deposit": "Underground", "category": "Indicated", "tonnes_mt": 54, "grade_gpt": 7.92, "contained_moz": 14, "page": 17},
-    {"deposit": "Underground", "category": "M&I", "tonnes_mt": 55, "grade_gpt": 7.93, "contained_moz": 14, "page": 17},
-    {"deposit": "Underground", "category": "Inferred", "tonnes_mt": 31, "grade_gpt": 7.3, "contained_moz": 7.3, "page": 17},
-]
+# 注意: 冒烟测试不再内置 GT 副本 —— 副本会与 data/gt/*.json 形成两套口径。
+# --demo 现在直接读 data/gt/barrick_p17_gt.json。
 
 
 def norm_name(s):
@@ -226,23 +216,25 @@ def main():
 
     pred = [json.loads(l) for l in pred_path.read_text(encoding="utf-8").splitlines() if l.strip()]
     if demo:
-        gt_raw, src = DEMO_GT, "demo: p17 人工核验真值(冒烟测试)"
+        demo_gt = ROOT / "data" / "gt" / "barrick_p17_gt.json"
+        gt_raw, src = load_gt(demo_gt), f"demo: {demo_gt.name} (冒烟测试, 与 --demo 前的内置副本无关)"
         pred = [r for r in pred if r.get("source_page") == 17]
     else:
         gt_path = Path(args[0]) if args else ROOT / "data" / "gt" / "barrick_gt.json"
         if not gt_path.exists():
             print(f"未找到 GT 文件 {gt_path}\n最小可用格式(每行一个对象或JSON数组, 字段名自动识别):\n"
                   '  {"deposit":"Open Pits","category":"Inferred","tonnes_mt":42,'
-                  '"grade_gpt":1.2,"contained_moz":1.7,"page":17}\n'
+                  '"grade":1.2,"grade_unit":"g/t","metal":1.7,"metal_unit":"Moz","page":17}\n'
                   "也可先跑冒烟测试: python src/evaluate.py --demo")
             return
         gt_raw, src = load_gt(gt_path), str(gt_path)
 
     gt_rows, n_skip, _ = build_gt_rows(gt_raw)
+    # 兼容两代字段名: 新产物用 grade/metal, 旧产物用 grade_gpt/contained_moz
     pred_rows = [{"deposit": r.get("deposit", ""), "category": norm_cat(r.get("category")),
                   "page": r.get("source_page"), "basis": r.get("basis"),
-                  "tonnes": r.get("tonnes_mt"), "grade": r.get("grade_gpt"),
-                  "contained": r.get("contained_moz")} for r in pred]
+                  "tonnes": r.get("tonnes_mt"), "grade": r.get("grade", r.get("grade_gpt")),
+                  "contained": r.get("metal", r.get("contained_moz"))} for r in pred]
 
     m, used_p = match(gt_rows, pred_rows)
     fields = {k: [0, 0] for k in ("category", "tonnes", "grade", "contained", "basis")}

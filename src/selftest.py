@@ -15,6 +15,7 @@ from pathlib import Path
 
 import extractor
 import pipeline
+import report_config
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -44,21 +45,21 @@ def seed_real_false_positive():
 
 def test_conservation_gate():
     good = {"deposit": "Gold Quarry", "category": "M&I",
-            "tonnes_mt": 89, "grade_gpt": 1.99, "contained_moz": 5.7}
-    bad = dict(good, contained_moz=35.0)
+            "tonnes_mt": 89, "grade": 1.99, "metal": 5.7}
+    bad = dict(good, metal=35.0)
     assert pipeline.conservation_issues([good]) == []
     assert len(pipeline.conservation_issues([bad])) == 1
-    print("Test A 通过: 守恒闸放行 89x1.99/31.1=5.7, 拦截篡改值 35")
+    print("Test A 通过: 守恒闸放行 89x1.99x(1/31.1035)=5.7, 拦截篡改值 35")
 
 
 def corrupt_poison(raw: str) -> str:
     recs = extractor.parse_records(raw)
     hit = False
     for r in recs:
-        if r["deposit"] == "Gold Quarry" and r["category"] == "M&I" and r["contained_moz"]:
-            r["contained_moz"] = round(r["contained_moz"] * 10, 3)   # 3.5 -> 35
+        if r["deposit"] == "Gold Quarry" and r["category"] == "M&I" and r["metal"]:
+            r["metal"] = round(r["metal"] * 10, 3)   # 3.5 -> 35
             hit = True
-    print("  [注入] Gold Quarry M&I contained 已下毒 x10" if hit
+    print("  [注入] Gold Quarry M&I metal 已下毒 x10" if hit
           else "  [注入] 警告: 未找到目标记录, 本轮未下毒")
     return json.dumps(recs, ensure_ascii=False)
 
@@ -94,6 +95,7 @@ def drill(pages: list, name: str, poison_always: bool):
 
 
 def main(pages_path: Path):
+    print("报告配置: " + report_config.summarize(pipeline.use_config(report_config.load(pages_path))))
     seed_real_false_positive()
     test_conservation_gate()
 
@@ -101,8 +103,8 @@ def main(pages_path: Path):
 
     r1 = drill(pages, "演习1(毒一次)", poison_always=False)
     gq = [r for r in r1["recs"] if r["deposit"] == "Gold Quarry" and r["category"] == "M&I"]
-    assert gq and abs(gq[0]["contained_moz"] - 3.5) < 1e-9, \
-        f"演习1最终值应复原 3.5, 实际 {gq and gq[0]['contained_moz']}"
+    assert gq and abs(gq[0]["metal"] - 3.5) < 1e-9, \
+        f"演习1最终值应复原 3.5, 实际 {gq and gq[0]['metal']}"
     assert r1["verdict"].startswith("ACCEPT")
     print("演习1 通过: 毒数据被守恒闸+critic拦下, 返工后复原 3.5, 未流入交付")
 

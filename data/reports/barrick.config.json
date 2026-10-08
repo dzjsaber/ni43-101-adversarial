@@ -1,0 +1,23 @@
+{
+  "commodity": "Au",
+  "grade_unit": "g/t",
+  "metal_unit": "Moz",
+  "contained_factor": 0.0321507466,
+  "tolerance": 0.10,
+  "keywords": {
+    "mineral resource": 3,
+    "resource statement": 3,
+    "tonnes": 2,
+    "contained": 2,
+    "indicated": 2,
+    "inferred": 2,
+    "measured": 2,
+    "g/t": 2,
+    "moz": 2,
+    "cut-off": 2,
+    "grade": 1,
+    "koz": 1
+  },
+  "fewshot": null,
+  "notes": "Barrick Carlin Complex 2024 (Table 1-1 / 14-1 / 14-21 / 14-22): Au, grade g/t, contained Moz, 100% and Barrick Attributable bases. contained_factor = 1/31.1035 -> metal(Moz) = tonnes_mt * grade(g/t) * factor. fewshot 使用默认的 p191 真实表格(同报告 -> p17 对账不作为能力证据, 见 RUN.md 已知限制)。"
+}

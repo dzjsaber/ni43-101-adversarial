@@ -9,20 +9,21 @@ from pathlib import Path
 
 import pdfplumber
 
+import report_config
+
 ROOT = Path(__file__).resolve().parents[1]
 
-KEYWORDS = {
-    "mineral resource": 3, "resource statement": 3,
-    "tonnes": 2, "contained": 2, "indicated": 2, "inferred": 2,
-    "measured": 2, "g/t": 2, "moz": 2, "cut-off": 2, "grade": 1, "koz": 1,
-}
+KEYWORDS = report_config.DEFAULT["keywords"]   # 也可由 data/reports/<报告名>.config.json 覆盖
 THRESHOLD = 5   # 页面关键词得分 >= 此值才入选候选
 
-def page_score(text: str) -> int:
+def page_score(text: str, keywords: dict = None) -> int:
     t = text.lower()
-    return sum(w for k, w in KEYWORDS.items() if k in t)
+    return sum(w for k, w in (keywords or KEYWORDS).items() if k in t)
 
 def main(pdf_path: Path):
+    cfg = report_config.load(pdf_path)
+    kw = report_config.keywords(cfg)
+    print("报告配置: " + report_config.summarize(cfg))
     out_dir = ROOT / "data" / "processed"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / (pdf_path.stem + ".pages.jsonl")
@@ -33,7 +34,7 @@ def main(pdf_path: Path):
         print(f"共 {n} 页,开始扫描…")
         for i, page in enumerate(pdf.pages, start=1):
             text = page.extract_text() or ""
-            score = page_score(text)
+            score = page_score(text, kw)
             tables = page.extract_tables() or []
             if score >= THRESHOLD or tables:            # 有表格的页无条件保留
                 pages.append({

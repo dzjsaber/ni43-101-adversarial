@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import guards                                                    # noqa: E402
 import pipeline                                                  # noqa: E402
+import report_config                                             # noqa: E402
 
 FAILED = []
 
@@ -34,6 +35,7 @@ def load(p):
 pages = load(ROOT / "data" / "processed" / "barrick.pages.jsonl")
 by_page = {p["page"]: p for p in pages}
 recs = load(ROOT / "data" / "processed" / "pipeline.records.jsonl")
+pipeline.use_config(report_config.load(ROOT / "data" / "processed" / "barrick.pages.jsonl"))
 
 print("A. 交付前分类(聚合行/摘要组行/跨页重复)")
 stamped, detail = guards.split_deliverable(recs, pages)
@@ -54,15 +56,20 @@ print(f"   守恒闸: {old or '[] (静默)'}")
 print(f"   结构闸: {len(new)} 条指控")
 # 现网交付物里聚合行已被返工修掉, 所以这里注入一条聚合行来验证闸门(而不是依赖数据里恰好有错)
 injected = p17 + [{"deposit": "Underground", "category": "M&I", "tonnes_mt": 55,
-                   "grade_gpt": 7.93, "contained_moz": 14, "source_page": 17}]
+                   "grade": 7.93, "metal": 14, "source_page": 17}]
 check(len(pipeline.conservation_issues(injected)) == len(old)
       and len(guards.structural_issues(injected, by_page[17])) > 0,
       "注入的聚合行被结构闸抓到, 而守恒闸对它静默")
 base = {"deposit": "Gold Quarry", "category": "M&I", "tonnes_mt": 55,
-        "grade_gpt": 1.99, "contained_moz": 3.5, "basis": "100% Basis"}
-check(pipeline.conservation_issues([dict(base, contained_moz=None)]) == []
-      and guards.structural_issues([dict(base, contained_moz=None)], by_page[192]),
-      "三元组残缺(contained=null) 旧闸静默、新闸拦截")
+        "grade": 1.99, "metal": 3.5, "basis": "100% Basis"}
+check(pipeline.conservation_issues([dict(base, metal=None)]) == []
+      and guards.structural_issues([dict(base, metal=None)], by_page[192]),
+      "三元组残缺(metal=null) 旧闸静默、新闸拦截")
+# 旧字段名(grade_gpt/contained_moz)必须继续可用 —— 历史产物与旧 GT 都是这个写法
+legacy = {"deposit": "Gold Quarry", "category": "M&I", "tonnes_mt": 55,
+          "grade_gpt": 1.99, "contained_moz": 35.0, "basis": "100% Basis"}
+check(len(pipeline.conservation_issues([legacy])) == 1,
+      "旧字段名(grade_gpt/contained_moz)仍被守恒闸正确识别")
 
 print("C. critic 指控的机械核验")
 # 用 evolution.jsonl 里留档的真实误报事件做回归(不依赖 critiques.jsonl 的当次运行结果:
@@ -90,7 +97,8 @@ for gt_name in ("barrick_p17_gt.json", "barrick_p192_gt.json"):
     gt = json.loads((ROOT / "data" / "gt" / gt_name).read_text(encoding="utf-8"))["records"]
     leaks = []
     for r in gt:
-        nums = [f"{float(r[k]):g}" for k in ("tonnes_mt", "grade_gpt", "contained_moz")]
+        r = report_config.normalize(r)
+        nums = [f"{float(r[k]):g}" for k in ("tonnes_mt", "grade", "metal")]
         if all(n in blob for n in nums):
             leaks.append((r["deposit"], r["category"]))
     print(f"   {gt_name}: {len(leaks)}/{len(gt)} 条三元组与 prompt 重合")

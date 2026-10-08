@@ -23,7 +23,8 @@ setx ZHIPU_API_KEY    "..."        # 审计端: open.bigmodel.cn / glm-4-flash
 ## 2. 目录与模块
 
 ```
-src/preprocess.py      PDF -> 候选资源表页(关键词评分), 输出 data/processed/<name>.pages.jsonl
+src/report_config.py   按报告配置商品/单位/守恒因子/关键词/few-shot; 字段名归一(兼容旧产物)
+src/preprocess.py      PDF -> 候选资源表页(关键词来自报告配置), 输出 data/processed/<name>.pages.jsonl
 src/extractor.py       DeepSeek 抽取(页码由代码盖戳) + 从 evolved_rules.txt 注入历史教训
 src/critic.py          GLM 审计评分 1-10(独立运行用; 管线内由 pipeline 调用)
 src/pipeline.py        主循环: 守恒闸+结构闸 -> critic -> 返工<=3 -> ACCEPT/ABSTAIN -> 交付前终审
@@ -33,12 +34,14 @@ src/selftest_guards.py 零成本回归套件(不调 API, 覆盖全部已知缺�
 src/evolve.py          失败史 -> 规则 -> 注入两端 prompt(滤除演习窗口)
 src/replay_evolution.py 进化规则 A/B 复跑(题目第 4 条的可复现证据)
 src/evaluate.py        字段级 ±5% 对账(带页码/单位/名称自动识别)
-src/mineral_mcp.py     MCP 工具层: 费用护栏(无 confirm 拒绝) + 路径白名单 + 8 个工具(stdio, 零依赖)
-src/mcp_probe.py       模拟 MCP 宿主做真握手, 验证 8 个工具与护栏(零成本)
+src/run_all.py         一份报告一条命令走完全链路(定位->抽取->审计->对抗->对账)
+src/mineral_mcp.py     MCP 工具层: 费用护栏(无 confirm 拒绝) + 路径白名单 + 9 个工具(stdio, 零依赖)
+src/mcp_probe.py       模拟 MCP 宿主做真握手, 验证 9 个工具与护栏(零成本)
 src/check_docs.py      文档与仓库一致性校验(零成本): 文件引用/行数/条数防止漂移
 data/reports/barrick.pdf                        输入报告(当前只有这一份, 338 页)
+data/reports/barrick.config.json                该报告的商品/单位/守恒/关键词配置(Au g/t Moz)
 data/processed/barrick.pages.jsonl              定位出的 124 个候选页
-data/processed/extracted.jsonl                  extractor 单独运行: 106 条原始记录
+data/processed/extracted.jsonl                  extractor 单独运行(没过闸, 条数会波动: 实测 98~106)
 data/processed/critiques.jsonl                  critic 单独运行: 12 页评分
 data/processed/pipeline.records.jsonl           主交付物 98 条(84 detail + 14 summary)
 data/processed/pipeline.detail.jsonl            可交付明细 84 条
@@ -67,6 +70,7 @@ python src/evaluate.py data/gt/barrick_p192_gt.json         # GT 对账(不要 k
 python src/mineral_mcp.py --selftest                        # 费用护栏/白名单自检(不要 key)
 python src/mcp_probe.py                                     # 模拟 MCP 宿主握手(不要 key)
 python src/check_docs.py                                    # 文档与仓库一致性(不要 key)
+python src/run_all.py data/reports/<报告名>.pdf [gt.json]    # 一份报告一条命令全链路(要 2 个 key)
 ```
 
 ## 4. 结果摘要(Barrick Carlin Complex, 2024 技术报告)
@@ -83,7 +87,10 @@ python src/check_docs.py                                    # 文档与仓库一
 
 - 交付物 `data/processed/pipeline.records.jsonl`: **98 条**(84 detail + 14 summary, 另标注 11 条跨页重复来源页)
 - 可交付明细 `data/processed/pipeline.detail.jsonl`: **84 条**(42+42, 每条带 `source_page`)
-- 82 条→84 条的差异来自修复"整列 Indicated 漏抽": 旧版本 p191/p192 各漏 11 条 Indicated
+- 明细 84 条:修复"整列 Indicated 漏抽"后 p191/p192 各 42 条(旧版本各 31 条, 每页漏 11 条 Indicated)
+- `extracted.jsonl` 是 `extractor.py` 单独跑的原始结果, 没有返工与结构闸, 所以条数会波动
+  (实测 98 / 102 / 106, 多出来的都是 p17/p154 的 `Underground` 聚合行)。**权威数字看管线产物**:
+  `pipeline.records.jsonl` 稳定 98 条, 因为结构闸会把聚合行打回返工或弃权
 - 弃权文件 `data/processed/abstain.jsonl`: 干净数据下 0 条(演习场景下见第 6 节)
 
 字段级对账(±5%, 含 basis):
@@ -170,7 +177,7 @@ Test A 通过:           守恒闸放行 89×1.99/31.1035=5.7, 拦截篡改值 3
 先用自带探针确认服务端没问题(零成本):
 
 ```powershell
-python src/mcp_probe.py     # 真握手 + 8 个工具 + 护栏, 应输出 FAILED: 无
+python src/mcp_probe.py     # 真握手 + 9 个工具 + 护栏, 应输出 FAILED: 无
 python src/mineral_mcp.py --selftest   # 只验护栏
 ```
 
@@ -203,3 +210,56 @@ Cherry Studio(实测版本 2.1.4)里的配置:
 与你在 Cherry Studio 里选的对话模型无关 —— 对话模型只负责决定调哪个工具。
 另外 `D:\Cherry Studio` 里那条指向旧仓库 `pythonProject\mineral-mcp\server.py` 的 MCP 条目
 是早期版本(只有确定性 pdfplumber 抽取, 没有费用护栏与白名单), 两条容易混淆, 建议只留新的。
+
+## 10. 多报告接入(报告配置)
+
+商品/单位/守恒公式/定位关键词/样例表格全部在报告配置里, **代码不含任何商品假设**:
+
+```
+data/reports/<报告名>.config.json      # 与 PDF 同目录同名; 缺失则退回 Au 默认
+```
+
+| 字段 | 含义 |
+|---|---|
+| `commodity` | 商品, 如 `Au` / `Li2O` / `Ta2O5` |
+| `grade_unit` / `metal_unit` | 品位与金属量单位, 如 `g/t`+`Moz`、`%`+`Mt`、`ppm`+`t` |
+| `contained_factor` | 守恒因子: `metal = tonnes_mt × grade × factor` |
+| `tolerance` | 守恒闸容差(默认 0.10) |
+| `keywords` | 资源表定位关键词与权重(锂报告要加 `li2o`、`ta2o5`、`ppm`) |
+| `fewshot` | 该商品的真实表格样例 `{user, assistant}`;缺省复用 Au 示例并打印告警 |
+
+常见口径的因子(直接抄):
+
+```
+Au   g/t -> Moz : 1/31.1035 = 0.0321507466
+Li2O %   -> Mt  : 0.01            (% -> Mt, 即 t×%/100)
+Li2O %   -> kt  : 10
+Ta2O5 ppm-> t   : 1.0             (t(Mt)×ppm 数值上等于 t)
+Ta2O5 ppm-> kt  : 0.001
+```
+
+新增一份报告:
+
+```powershell
+# 1) 放 PDF 与配置
+data/reports/pilbara.pdf
+data/reports/pilbara.config.json     # commodity/grade_unit/metal_unit/contained_factor/keywords
+# 2) 放真值(可选但强烈建议): data/gt/pilbara_gt.json
+# 3) 一条命令跑完
+python src/run_all.py data/reports/pilbara.pdf data/gt/pilbara_gt.json
+# 4) 收尾
+python src/selftest_guards.py ; python src/check_docs.py
+```
+
+对账字段名(`evaluate.py` 自动识别, 两代写法都认):
+
+| 语义 | 推荐写法 | 兼容的旧写法 |
+|---|---|---|
+| 矿石量 | `tonnes_mt` | `tonnes` / `mt` / `tonnage` |
+| 品位 | `grade` (+`grade_unit`) | `grade_gpt` / `gpt` / `au_gpt` |
+| 金属量 | `metal` (+`metal_unit`) | `contained_moz` / `contained` / `moz` |
+| 页码 | `page` | `source_page` / `page_no` |
+
+注意: `data/reports/barrick.config.json` 里的 `fewshot` 是 `null`, 即复用默认的 p191 真实表格 ——
+这也是 p17 对账**不能**作为能力证据的原因。拿到新报告后, 把某一份报告的真实表格写进另一份报告的
+`fewshot`, 泄漏问题就彻底消除。

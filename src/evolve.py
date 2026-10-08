@@ -14,9 +14,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 EXTRACTOR_TEMPLATES = [
-    ("守恒", "Physics: contained MUST equal tonnes_mt * grade_gpt / 31.1035 (Au). "
-             "Re-verify every record against this identity before output; "
-             "if a copied value breaks it, re-read the cell, never adjust numbers to fit."),
+    ("守恒", "Physics: the metal value MUST equal tonnes_mt * grade * factor, where the factor "
+             "comes from the report's table header/units (e.g. Au g/t -> Moz: 1/31.1035; "
+             "Li2O % -> Mt: 1/100; Ta2O5 ppm -> t: 1). Re-verify every record against this "
+             "identity before output; if a copied value breaks it, re-read the cell, "
+             "never adjust numbers to fit."),
     ("Total", "Skip aggregate rows: any row whose name contains Total, and grand-total rows "
               "where the word Total is printed on a separate line AFTER the numbers "
               "(the row itself may carry a plain name like 'Carlin Complex'). "

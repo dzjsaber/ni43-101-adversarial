@@ -16,13 +16,22 @@ from pathlib import Path
 import critic
 import extractor
 import guards
+import report_config
 
 ROOT = Path(__file__).resolve().parents[1]
-AU_OZ_PER_T = 31.1035
-CONSERVATION_TOL = 0.10
+_CFG = dict(report_config.DEFAULT)          # 由 use_config() 按报告覆盖(商品/单位/守恒因子)
 MAX_ROUNDS = 3
 MIN_SCORE = 10
 MAX_PAGES = 12
+
+
+def use_config(cfg=None) -> dict:
+    """切换报告配置: 守恒式、容差、抽取/审计两端 prompt 一起跟着换。"""
+    global _CFG
+    _CFG = dict(cfg or report_config.DEFAULT)
+    extractor.use_config(_CFG)
+    critic.use_config(_CFG)
+    return _CFG
 
 
 def retry(fn, what, n=3):
@@ -36,14 +45,16 @@ def retry(fn, what, n=3):
 
 
 def conservation_issues(recs):
+    spec = report_config.conservation(_CFG)
     out = []
-    for r in recs:
-        t, g, c = r.get("tonnes_mt"), r.get("grade_gpt"), r.get("contained_moz")
+    for r in report_config.normalize_all(recs, _CFG):     # 兼容旧字段名(grade_gpt/contained_moz)
+        t, g, c = r.get("tonnes_mt"), r.get("grade"), r.get("metal")
         if t and g and c:
-            expect = t * g / AU_OZ_PER_T
-            if abs(expect - c) / c > CONSERVATION_TOL:
-                out.append(f"{r['deposit']} ({r['category']}): 守恒违背 {t}x{g}/31.1035="
-                           f"{round(expect, 3)} 但 contained={c}")
+            expect = t * g * spec["factor"]
+            if abs(expect - c) / c > spec["tolerance"]:
+                out.append(f"{r['deposit']} ({r['category']}): 守恒违背 "
+                           f"{t}x{g}x{spec['factor']:.6g}={round(expect, 4)} "
+                           f"但 metal={c} {spec['unit']}")
     return out
 
 
@@ -53,13 +64,13 @@ def _norm(v):
 
 def records_key(recs):
     items = []
-    for r in recs:
+    for r in report_config.normalize_all(recs, _CFG):
         items.append(json.dumps({"deposit": r.get("deposit"),
                                  "category": r.get("category"),
                                  "basis": r.get("basis"),
                                  "t": _norm(r.get("tonnes_mt")),
-                                 "g": _norm(r.get("grade_gpt")),
-                                 "c": _norm(r.get("contained_moz"))},
+                                 "g": _norm(r.get("grade")),
+                                 "c": _norm(r.get("metal"))},
                                 sort_keys=True))
     return sorted(items)
 
@@ -159,6 +170,7 @@ def main(pages_path):
     pages = [json.loads(l) for l in pages_path.read_text(encoding="utf-8").splitlines() if l.strip()]
     eligible = sorted([p for p in pages if p["score"] >= MIN_SCORE], key=lambda p: -p["score"])
     todo = eligible[:MAX_PAGES]
+    print("报告配置: " + report_config.summarize(use_config(report_config.load(pages_path))))
     print(f"对抗管线启动: {len(todo)} 页 (score>={MIN_SCORE})")
     if len(eligible) > len(todo):                    # 截断必须显式告警, 不能静默丢页
         dropped = [f"p{p['page']}(score={p['score']})" for p in eligible[len(todo):]]
