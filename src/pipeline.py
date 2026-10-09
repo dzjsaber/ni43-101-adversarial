@@ -8,7 +8,6 @@ extract -> 守恒闸 -> critic 评分 -> (误报仲裁 / revise<=3轮) -> accept
 前置: 环境变量 DEEPSEEK_API_KEY 与 ZHIPU_API_KEY
 """
 import json
-import os
 import sys
 import time
 from pathlib import Path

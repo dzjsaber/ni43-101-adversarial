@@ -294,3 +294,91 @@ python src/selftest_guards.py ; python src/check_docs.py
 注意: `data/pdfs/barrick.config.json` 里的 `fewshot` 是 `null`, 即复用默认的 p191 真实表格 ——
 这也是 p17 对账**不能**作为能力证据的原因。拿到新报告后, 把某一份报告的真实表格写进另一份报告的
 `fewshot`, 泄漏问题就彻底消除。
+
+## 11. 发布到 GitHub(开源)
+
+### 11.1 推送前检查(已做, 可复现)
+
+```powershell
+git log --all -p -S 'sk-' | Select-String 'sk-'      # 历史里不该有密钥
+Get-ChildItem -Recurse -Force -File | Where-Object { $_.Name -match '^\.env|secret|\.pem$|\.key$' }
+python src/check_docs.py                              # 文档与仓库一致
+git status --short                                    # 应为空(干净工作区)
+```
+
+### 11.2 先设置提交身份(当前是占位符 Author/author@example.com, 必须改)
+
+```powershell
+git config --global user.name  "你的名字"
+git config --global user.email "你的GitHub邮箱"      # 建议与 GitHub 账号邮箱一致
+cd C:\Users\86177\PycharmProjects\ni43-101-adversarial
+git config user.name  "你的名字"                       # 只改本仓库
+git config user.email "你的GitHub邮箱"
+```
+
+> 可选: 若想让已有 8 次提交也显示你的身份, 执行
+> `git rebase --root --exec "git commit --amend --no-edit --reset-author"`(重写历史, 尚未推送时安全)。
+
+### 11.3 在 GitHub 网页建一个**空**仓库
+
+1. 打开 <https://github.com/new>;
+2. Repository name 例如 `ni43-101-adversarial`;
+3. 可见性选 **Public**(题目要求开源);
+4. **不要**勾选 Add a README / .gitignore / license(本地已有, 勾了会冲突);
+5. Create repository, 记下页面给的地址, 形如
+   `https://github.com/<你的用户名>/ni43-101-adversarial.git`。
+
+### 11.4 关联远程并推送(HTTPS, 本机已装 Git Credential Manager)
+
+```powershell
+cd C:\Users\86177\PycharmProjects\ni43-101-adversarial
+git branch -M main                                                    # 习惯用 main(可跳过)
+git remote add origin https://github.com/<你的用户名>/ni43-101-adversarial.git
+git push -u origin main
+```
+
+首次推送会弹出 **Git Credential Manager** 窗口: 选 `Sign in with your browser` 登录 GitHub 即可
+(若要求 Token:GitHub → Settings → Developer settings → Personal access tokens → Fine-grained,
+勾选该仓库的 **Contents: Read and write**, 用它当密码)。
+
+已经配好 SSH key 的话也可以走 SSH(本机 `~/.ssh/id_ed25519` 已存在):
+
+```powershell
+ssh -T git@github.com                                                  # 先确认身份: 应回 Hi <用户名>!
+git remote set-url origin git@github.com:<你的用户名>/ni43-101-adversarial.git
+git push -u origin main
+```
+
+### 11.5 可选: 用 GitHub CLI 一条命令建仓推送
+
+```powershell
+winget install --id GitHub.cli                                          # 安装 gh
+gh auth login                                                           # 浏览器登录
+cd C:\Users\86177\PycharmProjects\ni43-101-adversarial
+gh repo create ni43-101-adversarial --public --source . --remote origin --push
+```
+
+### 11.6 推送后核对
+
+- 仓库页能看到 `README.md` 渲染、`LICENSE` 显示为 MIT、`output/results.json` 等交付物;
+- 点 **About**(齿轮)补:Description 如
+  `NI 43-101 adversarial resource extraction: DeepSeek extractor + GLM critic + deterministic final audit`、
+  Topics 建议 `nlp` `llm` `pdf-extraction` `mining` `ni43-101` `adversarial-evaluation` `mcp`;
+- 打开 `Actions` 无红叉(本仓库未配 CI, 属正常);
+- 若你把仓库地址填进 README/RUN.md, 顺手补一个克隆命令。
+
+### 11.7 之后每次更新
+
+```powershell
+git add -A
+git commit -m "说明这次改了什么"
+git push
+```
+
+### 11.8 安全提醒(重要)
+
+- 本仓库**不含**真实密钥:只保留 `.env.example`,真实密钥走环境变量或本地 `.env`(`.gitignore` 已屏蔽)。
+- 如果你曾经把 `DEEPSEEK_API_KEY` / `ZHIPU_API_KEY` 的明文贴到聊天、文档或截图里,
+  建议去两家控制台**轮换一次密钥**(旧密钥作废), 再继续推送。
+- 永远不要把 `setx` 的结果写进任何会被提交的文件;命令行里用
+  `$env:ZHIPU_API_KEY = (Get-ItemProperty 'HKLM:\...').ZHIPU_API_KEY` 这种方式临时注入更安全。

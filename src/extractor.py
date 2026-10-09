@@ -7,7 +7,6 @@ extractor.py — 调 DeepSeek 从候选页抽取矿产资源记录
 配置: 商品/单位/守恒因子来自 data/pdfs/<报告名>.config.json (见 report_config.py)
 """
 import json
-import os
 import sys
 import time
 from pathlib import Path

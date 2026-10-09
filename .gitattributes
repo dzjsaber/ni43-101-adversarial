@@ -1,0 +1,13 @@
+# 统一换行, 避免跨平台出现整文件 diff
+* text=auto eol=lf
+
+# 二进制文件不做换行转换
+*.pdf binary
+*.png binary
+*.jpg binary
+*.xlsx binary
+
+# 这些是机器可读产物, 保持 LF, 便于 diff
+*.json  text eol=lf
+*.jsonl text eol=lf
+*.md    text eol=lf

@@ -123,9 +123,9 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 |---|---|---|
 | `src/report_config.py` | 152 | **按报告配置**商品/单位/守恒因子/关键词/few-shot;`.env` 加载;UTF-8 标准流;字段名归一(兼容旧产物);统一取密钥 |
 | `src/preprocess.py` | 71 | pdfplumber 扫描 + 关键词/表格定位候选资源表页(tqdm 可选) |
-| `src/extractor.py` | 239 | DeepSeek 抽取;prompt 按配置渲染;页码由代码盖戳;**每次调用打印耗时与 token** |
-| `src/critic.py` | 195 | GLM 审计 1-10;物理规则随单位切换;同样打印耗时与 token |
-| `src/pipeline.py` | 258 | 主循环:守恒/结构闸 → critic → 指控核验 → ≤3 轮返工 → ACCEPT/ABSTAIN → 交付前终审 |
+| `src/extractor.py` | 238 | DeepSeek 抽取;prompt 按配置渲染;页码由代码盖戳;**每次调用打印耗时与 token** |
+| `src/critic.py` | 194 | GLM 审计 1-10;物理规则随单位切换;同样打印耗时与 token |
+| `src/pipeline.py` | 257 | 主循环:守恒/结构闸 → critic → 指控核验 → ≤3 轮返工 → ACCEPT/ABSTAIN → 交付前终审 |
 | `src/guards.py` | 193 | **确定性终审层**:聚合行、三元组残缺、列组完整、M&I 自洽、critic 指控逐字核验、交付分类 |
 | `src/evaluate.py` | 335 | **评分协议**:字段级 ±5% accuracy + 单位核对 + 报告 `protocol` 块 |
 | `src/spec_export.py` | 125 | 导出题目要求结构 `output/results.json`(indicated/inferred/评分/abstain) |
@@ -170,6 +170,9 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | `requirements.txt` | 必需依赖:`requests`、`pdfplumber` |
 | `requirements-optional.txt` | 可选依赖:`python-dotenv`、`tqdm`(缺了照跑, 代码 try/except 降级) |
 | `.gitignore` | 忽略 `__pycache__/`、`venv/`、`.env`、MCP 运行日志 |
+| `.env.example` | 密钥模板(复制成 `.env` 用;真实密钥永不入库) |
+| `.gitattributes` | 统一 LF 换行、声明二进制文件(避免跨平台整文件 diff) |
+| `LICENSE` | MIT 许可(**发布前请把版权人 `<在此填写你的姓名或 GitHub 用户名>` 改成你自己的名字**) |
 
 > 依赖说明:题目示例用 `openai` SDK 调各家模型, 本项目直接用 `requests` 调两家厂商的
 > HTTP 端点(DeepSeek `/chat/completions`、智谱 `openai.bigapi` 兼容端点), 少一层依赖、
@@ -253,3 +256,15 @@ python src/mineral_mcp.py --selftest ; python src/mcp_probe.py             # MCP
 环境:Python 3.8;需要 `DEEPSEEK_API_KEY`(抽取端)与 `ZHIPU_API_KEY`(审计端)。
 `check_docs.py` / `selftest_guards.py` / `evaluate.py` / `mineral_mcp.py --selftest` /
 `mcp_probe.py` / `revise_loop.py --dry-run` 完全不花钱。详见 **RUN.md**。
+
+## 10. 开源与许可
+
+- 许可证:**MIT**(见 `LICENSE`)。发布前请把版权人占位符替换成你的姓名或 GitHub 用户名;
+  如果你更希望 Apache-2.0 / AGPL-3.0, 直接替换该文件即可, 代码无需改动。
+- 密钥安全:仓库只保留 `.env.example`;真实密钥走环境变量或本地 `.env`(`.gitignore` 已屏蔽)。
+  `git log` 全历史已扫描过, 无密钥、无令牌、无口令。
+- 测试数据来源:`data/pdfs/barrick.pdf` 是**公开发布的 NI 43-101 技术报告**(公开披露文件),
+  已在第 0 节标注来源信息与 SHA256。若你不想随仓库分发该 PDF, 删掉它并在 README 保留
+  SHA256 与获取方式即可, 其余流程不变。
+- 仓库体积:`data/pdfs/barrick.pdf` 约 10.7 MB(远低于 GitHub 单文件 50 MB 警告线),
+  仓库总计约 11 MB。

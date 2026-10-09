@@ -6,7 +6,6 @@ critic.py — CriticMaster: 调 GLM(glm-4-flash, 免费) 对抽取结果挑刺, 
 进化: 若存在 data/evolved_critic_rules.txt, 自动追加进 system prompt
 """
 import json
-import os
 import sys
 import time
 from pathlib import Path
