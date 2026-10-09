@@ -134,8 +134,8 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | `src/selftest_guards.py` | 115 | 零成本回归套件(A 分类 / B 闸门盲区 / C 误报驳回 / D 泄漏回归) |
 | `src/evolve.py` | 118 | 失败史 → 规则(滤除演习窗口, 抽取端不吸收 critic 的教训) |
 | `src/replay_evolution.py` | 120 | 进化规则 A/B 复跑(改进前后评分与违规对比) |
-| `src/mineral_mcp.py` | 461 | MCP 工具层:零依赖 stdio + 费用护栏 + 路径白名单 + 10 个工具 |
-| `src/mcp_probe.py` | 181 | 模拟 MCP 宿主做真握手(零成本验证) |
+| `src/mineral_mcp.py` | 471 | MCP 工具层:零依赖 stdio + 费用护栏 + 路径白名单 + 10 个工具(对 resources/prompts 探测友好) |
+| `src/mcp_probe.py` | 185 | 模拟 MCP 宿主做真握手(零成本验证) |
 | `src/check_docs.py` | 104 | 文档与仓库一致性闸门(文件引用/行数/产物条数) |
 
 ### 4.3 数据与产物

@@ -147,6 +147,10 @@ def main():
         check("未知工具" in text_of(r), "未知工具被拒绝")
         r = s.call(11, "no/such/method")
         check(r.get("error", {}).get("code") == -32601, "未知方法返回 -32601")
+        r = s.call(16, "resources/list")
+        check(r.get("result", {}).get("resources") == [], "resources/list 返回空列表(宿主探测友好)")
+        r = s.call(17, "prompts/list")
+        check(r.get("result", {}).get("prompts") == [], "prompts/list 返回空列表")
 
         print("8. GT 对账工具(离线免费)与演习护栏")
         r = s.call(12, "tools/call", {"name": "evaluate_gt", "arguments": {"gt": "p192"}})

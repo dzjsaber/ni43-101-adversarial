@@ -417,6 +417,16 @@ def serve_stdio(stdin=None, stdout=None):
             result = {}
         elif method == "tools/list":
             result = {"tools": tool_definitions()}
+        # 只用 tools, 但不少宿主(含 Cherry Studio)会顺手探测这几个方法;
+        # 返回"空列表/空对象"比返回 -32601 更友好, 否则容易被标成"服务不完整"。
+        elif method in ("resources/list",):
+            result = {"resources": []}
+        elif method in ("resources/templates/list",):
+            result = {"resourceTemplates": []}
+        elif method in ("prompts/list",):
+            result = {"prompts": []}
+        elif method in ("logging/setLevel", "completion/complete"):
+            result = {"completion": {"values": [], "total": 0, "hasMore": False}}
         elif method == "tools/call":
             name, args = params.get("name"), params.get("arguments") or {}
             fn = TOOLS.get(name)
