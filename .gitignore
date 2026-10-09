@@ -1,2 +1,6 @@
 __pycache__/
 *.pyc
+venv/
+.venv/
+.env
+data/processed/last_mcp_run.log

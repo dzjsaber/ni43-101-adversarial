@@ -10,8 +10,6 @@ guards.py — 确定性终审层
  - 摘要表里 'Underground' / 数值 / 'Total' 三行拆分的聚合行, 守恒闸完全静默;
  - 同一页同一输入, critic 两次运行给过 8 分(3 条误报)和 10 分, 审计层本身不稳定。
 """
-import itertools
-import json
 import re
 
 import report_config

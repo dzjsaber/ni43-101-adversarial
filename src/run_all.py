@@ -2,10 +2,10 @@
 run_all.py — 一份报告一条命令走完全链路(定位 → 抽取 → 审计 → 对抗 → 对账)
 
 用法:
-  python src/run_all.py data/reports/barrick.pdf
-  python src/run_all.py data/reports/pilbara.pdf data/gt/pilbara_gt.json
+  python src/run_all.py data/pdfs/barrick.pdf
+  python src/run_all.py data/pdfs/pilbara.pdf data/ground_truth/pilbara_gt.json
 说明:
-  - 自动读取 data/reports/<报告名>.config.json 决定商品/单位/守恒/关键词(缺失则 Au 默认)
+  - 自动读取 data/pdfs/<报告名>.config.json 决定商品/单位/守恒/关键词(缺失则 Au 默认)
   - 给了 GT 就顺带做 ±5% 字段级对账; 没给就跳过
   - 每步的耗时与关键数字都会打印, 失败即中断并给出手工命令
 前置: DEEPSEEK_API_KEY + ZHIPU_API_KEY
@@ -44,6 +44,8 @@ def count(rel):
 
 
 def main():
+    report_config.setup_stdio()
+    report_config.load_env()
     if len(sys.argv) < 2:
         sys.exit(__doc__.strip())
     pdf = Path(sys.argv[1])
@@ -61,22 +63,25 @@ def main():
               f"将复用 Au 示例 —— 建议先在 {report_config.config_path(pdf).name} 里补上真实表格")
 
     pages_rel = f"data/processed/{pdf.stem}.pages.jsonl"
-    run("1/5 定位候选资源表页", ["src/preprocess.py", str(pdf)])
+    run("1/7 定位候选资源表页", ["src/preprocess.py", str(pdf)])
     print(f"      候选页: {count(pages_rel)}")
-    run("2/5 抽取(DeepSeek)", ["src/extractor.py", pages_rel])
+    run("2/7 抽取(DeepSeek)", ["src/extractor.py", pages_rel])
     print(f"      原始记录: {count('data/processed/extracted.jsonl')}")
-    run("3/5 独立审计(GLM)", ["src/critic.py", pages_rel, "data/processed/extracted.jsonl"])
+    run("3/7 独立审计(GLM)", ["src/critic.py", pages_rel, "data/processed/extracted.jsonl"])
     print(f"      审计页数: {count('data/processed/critiques.jsonl')}")
-    run("4/5 对抗主循环", ["src/pipeline.py", pages_rel])
+    run("4/7 对抗主循环", ["src/pipeline.py", pages_rel])
     print(f"      交付记录: {count('data/processed/pipeline.records.jsonl')}"
           f" | 明细: {count('data/processed/pipeline.detail.jsonl')}"
           f" | 弃权: {count('data/processed/abstain.jsonl')}")
     if gt:
-        run("5/5 GT 对账" if gt else "5/5 跳过对账", ["src/evaluate.py", str(gt)])
+        run("5/7 GT 对账(字段级 ±5%)", ["src/evaluate.py", str(gt)])
     else:
-        print("\n===== 5/5 未给 GT, 跳过对账 =====")
+        print("\n===== 5/7 未给 GT, 跳过对账 =====")
+    run("6/7 导出题目交付清单", ["src/spec_export.py", pages_rel])
+    run("7/7 导出进化日志快照", ["pipeline/evolution_log.py", "--export"])
     print("\n下一步: python src/selftest_guards.py(回归) / src/evolve.py(炼规则) / "
           "src/replay_evolution.py(A/B)")
+    print("题目交付清单: output/results.json(抽取结果+评分+abstain) / output/evolution.jsonl(失败轨迹)")
 
 
 if __name__ == "__main__":

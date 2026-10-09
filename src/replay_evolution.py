@@ -24,6 +24,7 @@ import critic                                                     # noqa: E402
 import extractor                                                  # noqa: E402
 import guards                                                     # noqa: E402
 import pipeline                                                   # noqa: E402
+import report_config                                              # noqa: E402
 
 
 def rules_text():
@@ -53,6 +54,8 @@ def run_arm(page, page_text, rules, ds_key, zp_key):
 
 
 def main():
+    report_config.setup_stdio()
+    report_config.load_env()
     ds_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
     zp_key = os.environ.get("ZHIPU_API_KEY", "").strip()
     if not ds_key or not zp_key:

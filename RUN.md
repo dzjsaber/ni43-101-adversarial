@@ -7,6 +7,7 @@
 ```
 Python 3.8 (本机: C:\Users\86177\AppData\Local\Programs\Python\Python38\python.exe)
 pip install -r requirements.txt        # requests, pdfplumber
+pip install -r requirements-optional.txt  # 可选: python-dotenv(.env 支持) / tqdm(进度条); 缺了照跑
 ```
 
 环境变量(两个都必须有; `setx` 后需重开终端):
@@ -23,6 +24,16 @@ setx ZHIPU_API_KEY    "..."        # 审计端: open.bigmodel.cn / glm-4-flash
 ## 2. 目录与模块
 
 ```
+# ---- 题目指定的入口包(薄封装, 逻辑复用 src/) ----
+pipeline/revise_loop.py     题目主入口: 迭代控制(<=3 轮 / >=8 通过 / 否则 abstain) -> output/results.json
+pipeline/pdf_loader.py      PDF 读取/文本提取/表格定位(pdfplumber)
+pipeline/extractor.py       Extractor Agent 入口(DeepSeek)
+pipeline/critic.py          CriticMaster Agent 入口(GLM)
+pipeline/evolution_log.py   进化日志查看 / 导出 output/evolution.jsonl
+pipeline/replay_evolution.py 失败史复跑(A/B 对比)
+pipeline/_bootstrap.py     路径引导: 防止 pipeline/extractor.py 里的 import extractor 解析到自己
+
+# ---- 核心实现 ----
 src/report_config.py   按报告配置商品/单位/守恒因子/关键词/few-shot; 字段名归一(兼容旧产物)
 src/preprocess.py      PDF -> 候选资源表页(关键词来自报告配置), 输出 data/processed/<name>.pages.jsonl
 src/extractor.py       DeepSeek 抽取(页码由代码盖戳) + 从 evolved_rules.txt 注入历史教训
@@ -35,11 +46,12 @@ src/evolve.py          失败史 -> 规则 -> 注入两端 prompt(滤除演习�
 src/replay_evolution.py 进化规则 A/B 复跑(题目第 4 条的可复现证据)
 src/evaluate.py        字段级 ±5% 对账(带页码/单位/名称自动识别)
 src/run_all.py         一份报告一条命令走完全链路(定位->抽取->审计->对抗->对账)
-src/mineral_mcp.py     MCP 工具层: 费用护栏(无 confirm 拒绝) + 路径白名单 + 9 个工具(stdio, 零依赖)
-src/mcp_probe.py       模拟 MCP 宿主做真握手, 验证 9 个工具与护栏(零成本)
+src/spec_export.py     导出题目交付结构 output/results.json(indicated/inferred/评分/abstain)
+src/mineral_mcp.py     MCP 工具层: 费用护栏(无 confirm 拒绝) + 路径白名单 + 10 个工具(stdio, 零依赖)
+src/mcp_probe.py       模拟 MCP 宿主做真握手, 验证 10 个工具与护栏(零成本)
 src/check_docs.py      文档与仓库一致性校验(零成本): 文件引用/行数/条数防止漂移
-data/reports/barrick.pdf                        输入报告(当前只有这一份, 338 页)
-data/reports/barrick.config.json                该报告的商品/单位/守恒/关键词配置(Au g/t Moz)
+data/pdfs/barrick.pdf                        输入报告(当前只有这一份, 338 页)
+data/pdfs/barrick.config.json                该报告的商品/单位/守恒/关键词配置(Au g/t Moz)
 data/processed/barrick.pages.jsonl              定位出的 124 个候选页
 data/processed/extracted.jsonl                  extractor 单独运行(没过闸, 条数会波动: 实测 98~106)
 data/processed/critiques.jsonl                  critic 单独运行: 12 页评分
@@ -50,15 +62,21 @@ data/processed/eval_report.json                 最近一次对账报告
 data/processed/replay_ab.json                   进化规则 A/B 复跑结果
 data/evolution.jsonl                            失败/返工/弃权/演习/对账轨迹(append-only)
 data/evolved_rules.txt / evolved_critic_rules.txt  炼化出的两端规则
-data/gt/barrick_p17_gt.json                     摘要表真值 7 条
-data/gt/barrick_p192_gt.json                    明细表真值 42 条(泄漏免疫)
-README.md / RUN.md / requirements.txt / .gitignore
+data/ground_truth/barrick_p17_gt.json                     摘要表真值 7 条
+data/ground_truth/barrick_p192_gt.json                    明细表真值 42 条(泄漏免疫)
+output/results.json                             题目要求的抽取结果(indicated/inferred/评分/abstain)
+output/evolution.jsonl                          失败轨迹快照(权威文件 data/evolution.jsonl)
+output/protocol_check.json                      弃权行为验收记录(演习1 ACCEPT / 演习2 ABSTAIN)
+output/replay_ab.json                           A/B 复跑快照
+README.md / RUN.md / requirements.txt / requirements-optional.txt / .gitignore
 ```
 
 ## 3. 运行命令
 
 ```powershell
-python src/preprocess.py data/reports/barrick.pdf          # 338 页 -> 124 候选页
+python pipeline/revise_loop.py --pdf data/pdfs/barrick.pdf [--gt data/ground_truth/barrick_p192_gt.json]  # 题目主入口
+python pipeline/revise_loop.py --pdf data/pdfs/barrick.pdf --dry-run     # 只打印计划, 不花钱
+python src/preprocess.py data/pdfs/barrick.pdf          # 338 页 -> 124 候选页
 python src/extractor.py  data/processed/barrick.pages.jsonl
 python src/critic.py     data/processed/barrick.pages.jsonl data/processed/extracted.jsonl
 python src/pipeline.py   data/processed/barrick.pages.jsonl # 主链路(要 2 个 key)
@@ -66,16 +84,29 @@ python src/selftest.py   data/processed/barrick.pages.jsonl # 故障注入演习
 python src/selftest_guards.py                               # 零成本回归(不要 key)
 python src/evolve.py                                        # 失败史 -> 规则
 python src/replay_evolution.py                              # 进化规则 A/B(要 2 个 key)
-python src/evaluate.py data/gt/barrick_p192_gt.json         # GT 对账(不要 key)
+python src/evaluate.py data/ground_truth/barrick_p192_gt.json         # GT 对账(不要 key)
 python src/mineral_mcp.py --selftest                        # 费用护栏/白名单自检(不要 key)
 python src/mcp_probe.py                                     # 模拟 MCP 宿主握手(不要 key)
 python src/check_docs.py                                    # 文档与仓库一致性(不要 key)
-python src/run_all.py data/reports/<报告名>.pdf [gt.json]    # 一份报告一条命令全链路(要 2 个 key)
+python src/run_all.py data/pdfs/<报告名>.pdf [gt.json]    # 一份报告一条命令全链路(要 2 个 key)
+python pipeline/evolution_log.py --tail 10                 # 失败轨迹
+python src/spec_export.py                                  # 单独导出 output/results.json
 ```
 
 ## 4. 结果摘要(Barrick Carlin Complex, 2024 技术报告)
 
-定位到 124 个候选页, 抽取其中关键词得分 ≥10 的 12 页; 主链路 12/12 ACCEPT, 0 弃权, 单次 61 秒。
+**先把数据来源说清楚(题目承诺的输入实际未提供):**
+
+| 题目要求的三份报告 | 是否提供 | 本项目的处理 |
+|---|---|---|
+| Barrick Carlin(2024) | ❌ 未提供 | 候选人**自行从公开渠道获取了 1 份真实 NI 43-101 技术报告**作为测试数据:`data/pdfs/barrick.pdf`(338 页 / 10.21 MB / SHA256 `43380869…13DD`) |
+| Newmont | ❌ 未提供 | **无法验证**;`data/pdfs/newmont.config.json` + GT 到位后执行 `python src/run_all.py` 即可接入 |
+| Pilbara Minerals | ❌ 未提供 | **无法验证**;锂/钽口径需要新建配置(`grade_unit=%` / `metal_unit=Mt` 或 `t`,`contained_factor` 按第 10 节的因子表填) |
+| 官方 GT | ❌ 未提供 | 候选人对自备报告的两页资源表**逐行手工核验**, 生成 `data/ground_truth/barrick_p17_gt.json`(7 条)与 `barrick_p192_gt.json`(42 条) |
+
+因此本节所有数字仅代表**自备的 Barrick 单份报告**, 不代表三家报告或官方 GT 的表现。
+
+定位到 124 个候选页, 抽取其中关键词得分 ≥10 的 12 页; 主链路 12/12 ACCEPT, 0 弃权, 单次约 63 秒。
 
 | 页 | 内容 | 记录数 | 轮数 | 终审分类 |
 |---|---|---|---|---|
@@ -216,7 +247,7 @@ Cherry Studio(实测版本 2.1.4)里的配置:
 商品/单位/守恒公式/定位关键词/样例表格全部在报告配置里, **代码不含任何商品假设**:
 
 ```
-data/reports/<报告名>.config.json      # 与 PDF 同目录同名; 缺失则退回 Au 默认
+data/pdfs/<报告名>.config.json      # 与 PDF 同目录同名; 缺失则退回 Au 默认
 ```
 
 | 字段 | 含义 |
@@ -242,11 +273,11 @@ Ta2O5 ppm-> kt  : 0.001
 
 ```powershell
 # 1) 放 PDF 与配置
-data/reports/pilbara.pdf
-data/reports/pilbara.config.json     # commodity/grade_unit/metal_unit/contained_factor/keywords
-# 2) 放真值(可选但强烈建议): data/gt/pilbara_gt.json
+data/pdfs/pilbara.pdf
+data/pdfs/pilbara.config.json     # commodity/grade_unit/metal_unit/contained_factor/keywords
+# 2) 放真值(可选但强烈建议): data/ground_truth/pilbara_gt.json
 # 3) 一条命令跑完
-python src/run_all.py data/reports/pilbara.pdf data/gt/pilbara_gt.json
+python src/run_all.py data/pdfs/pilbara.pdf data/ground_truth/pilbara_gt.json
 # 4) 收尾
 python src/selftest_guards.py ; python src/check_docs.py
 ```
@@ -260,6 +291,6 @@ python src/selftest_guards.py ; python src/check_docs.py
 | 金属量 | `metal` (+`metal_unit`) | `contained_moz` / `contained` / `moz` |
 | 页码 | `page` | `source_page` / `page_no` |
 
-注意: `data/reports/barrick.config.json` 里的 `fewshot` 是 `null`, 即复用默认的 p191 真实表格 ——
+注意: `data/pdfs/barrick.config.json` 里的 `fewshot` 是 `null`, 即复用默认的 p191 真实表格 ——
 这也是 p17 对账**不能**作为能力证据的原因。拿到新报告后, 把某一份报告的真实表格写进另一份报告的
 `fewshot`, 泄漏问题就彻底消除。

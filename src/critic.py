@@ -20,6 +20,17 @@ API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
 MODEL = "glm-4-flash"      # 免费档; 不够犀利可换 glm-4-plus
 RETRIES = 3
 
+USAGE = {"calls": 0, "seconds": 0.0, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+
+
+def reset_usage() -> None:
+    for k in USAGE:
+        USAGE[k] = 0 if k == "calls" else (0.0 if k == "seconds" else 0)
+
+
+def usage_summary() -> dict:
+    return dict(USAGE)
+
 
 _CFG = dict(report_config.DEFAULT)
 
@@ -78,6 +89,7 @@ def use_config(cfg=None):
 
 
 def call_glm(user_text: str, api_key: str) -> str:
+    t0 = time.time()
     body = {
         "model": MODEL,
         "temperature": 0,
@@ -90,7 +102,16 @@ def call_glm(user_text: str, api_key: str) -> str:
     r = requests.post(API_URL, json=body,
                       headers={"Authorization": f"Bearer {api_key}"}, timeout=120)
     r.raise_for_status()
-    return r.json()["choices"][0]["message"]["content"]
+    data = r.json()
+    dt = time.time() - t0
+    u = data.get("usage") or {}
+    USAGE["calls"] += 1
+    USAGE["seconds"] += dt
+    for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
+        USAGE[key] += int(u.get(key) or 0)
+    print(f"    [critic] {MODEL} 耗时 {dt:.1f}s | tokens: prompt={u.get('prompt_tokens', '?')} "
+          f"completion={u.get('completion_tokens', '?')} total={u.get('total_tokens', '?')}")
+    return data["choices"][0]["message"]["content"]
 
 
 def parse_critique(raw: str) -> dict:
@@ -107,9 +128,9 @@ def parse_critique(raw: str) -> dict:
 
 
 def main(pages_path: Path, extracted_path: Path):
-    api_key = os.environ.get("ZHIPU_API_KEY", "").strip()
-    if not api_key:
-        sys.exit('未找到 ZHIPU_API_KEY。设置: setx ZHIPU_API_KEY "你的key" 然后重开终端')
+    report_config.setup_stdio()
+    api_key = report_config.api_key("ZHIPU_API_KEY")
+    reset_usage()
 
     print("报告配置: " + report_config.summarize(use_config(report_config.load(pages_path))))
     pages = {p["page"]: p for p in
@@ -163,6 +184,9 @@ def main(pages_path: Path, extracted_path: Path):
 
     print(f"\nOK: {len(todo)} 页审计完成 -> {out_path}")
     print(f"通过 {n_pass} 页 / 待返工 {n_fail} 页 (score>=8 为通过)")
+    print(f"    API 调用 {USAGE['calls']} 次, 累计耗时 {USAGE['seconds']:.1f}s, "
+          f"tokens: prompt={USAGE['prompt_tokens']} completion={USAGE['completion_tokens']} "
+          f"total={USAGE['total_tokens']}")
 
 
 if __name__ == "__main__":

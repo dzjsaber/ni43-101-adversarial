@@ -3,7 +3,7 @@ evaluate.py — 对 GT 做字段级对账评分 (题面容差 ±5%)
 用法:
   python src/evaluate.py <gt_path> [pred_path]   # 真实 GT 对账
   python src/evaluate.py --demo                  # 冒烟测试: 用人工核验过的 p17 十条真值
-默认: gt=data/gt/barrick_gt.json  pred=data/processed/pipeline.records.jsonl
+默认: gt=data/ground_truth/barrick_gt.json  pred=data/processed/pipeline.records.jsonl
 GT 字段名自动识别; 命名特殊时在下方 GT_FIELD_MAP 手写映射即可( canon -> 你的字段名 )
 单位约定: 数值 >1e4 的 tonnes 视为原始吨(自动 /1e6 转Mt), >1e3 的 contained
           视为原始盎司(自动 /1e6 转Moz), grade 一律 g/t 原值
@@ -15,6 +15,8 @@ import sys
 import time
 from difflib import SequenceMatcher
 from pathlib import Path
+
+import report_config
 
 ROOT = Path(__file__).resolve().parents[1]
 TOLERANCE = 0.05      # 字段级 ±5%
@@ -33,8 +35,8 @@ CAND = {
     "basis":     ["basis", "reporting_basis", "basis_of_reporting"],
 }
 
-# 注意: 冒烟测试不再内置 GT 副本 —— 副本会与 data/gt/*.json 形成两套口径。
-# --demo 现在直接读 data/gt/barrick_p17_gt.json。
+# 注意: 冒烟测试不再内置 GT 副本 —— 副本会与 data/ground_truth/*.json 形成两套口径。
+# --demo 现在直接读 data/ground_truth/barrick_p17_gt.json。
 
 
 def norm_name(s):
@@ -146,6 +148,8 @@ def build_gt_rows(raw):
             "tonnes": to_mt(t),
             "grade": to_number(r.get(fmap.get("grade", "@"))),
             "contained": to_moz(to_number(r.get(fmap.get("contained", "@")))),
+            "grade_unit": r.get("grade_unit") or r.get("Unit") or r.get("unit"),
+            "metal_unit": r.get("metal_unit"),
         })
     return rows, skipped, fmap
 
@@ -209,18 +213,32 @@ def basis_pass(gb, pb):
     return ("attribut" in gb) == ("attribut" in pb) and ("100%" in gb) == ("100%" in pb)
 
 
+def unit_pass(expected, got) -> bool:
+    """单位必须一致(题面评分标准里的"单位正确")。expected 缺省时用报告配置的单位兜底。"""
+    if not expected:
+        return None
+    norm = lambda s: str(s or "").strip().lower().replace(" ", "")     # noqa: E731
+    e, g = norm(expected), norm(got)
+    if not g:
+        return False
+    if e == g:
+        return True
+    return (e, g) in {("%", "wt%"), ("wt%", "%")}
+
+
 def main():
+    report_config.setup_stdio()
     args = [a for a in sys.argv[1:] if a != "--demo"]
     demo = "--demo" in sys.argv
     pred_path = Path(args[1]) if len(args) > 1 else ROOT / "data" / "processed" / "pipeline.records.jsonl"
 
     pred = [json.loads(l) for l in pred_path.read_text(encoding="utf-8").splitlines() if l.strip()]
     if demo:
-        demo_gt = ROOT / "data" / "gt" / "barrick_p17_gt.json"
+        demo_gt = ROOT / "data" / "ground_truth" / "barrick_p17_gt.json"
         gt_raw, src = load_gt(demo_gt), f"demo: {demo_gt.name} (冒烟测试, 与 --demo 前的内置副本无关)"
         pred = [r for r in pred if r.get("source_page") == 17]
     else:
-        gt_path = Path(args[0]) if args else ROOT / "data" / "gt" / "barrick_gt.json"
+        gt_path = Path(args[0]) if args else ROOT / "data" / "ground_truth" / "barrick_gt.json"
         if not gt_path.exists():
             print(f"未找到 GT 文件 {gt_path}\n最小可用格式(每行一个对象或JSON数组, 字段名自动识别):\n"
                   '  {"deposit":"Open Pits","category":"Inferred","tonnes_mt":42,'
@@ -231,13 +249,16 @@ def main():
 
     gt_rows, n_skip, _ = build_gt_rows(gt_raw)
     # 兼容两代字段名: 新产物用 grade/metal, 旧产物用 grade_gpt/contained_moz
+    cfg = report_config.load(pred_path)
     pred_rows = [{"deposit": r.get("deposit", ""), "category": norm_cat(r.get("category")),
                   "page": r.get("source_page"), "basis": r.get("basis"),
                   "tonnes": r.get("tonnes_mt"), "grade": r.get("grade", r.get("grade_gpt")),
-                  "contained": r.get("metal", r.get("contained_moz"))} for r in pred]
+                  "contained": r.get("metal", r.get("contained_moz")),
+                  "grade_unit": r.get("grade_unit") or cfg["grade_unit"],
+                  "metal_unit": r.get("metal_unit") or cfg["metal_unit"]} for r in pred]
 
     m, used_p = match(gt_rows, pred_rows)
-    fields = {k: [0, 0] for k in ("category", "tonnes", "grade", "contained", "basis")}
+    fields = {k: [0, 0] for k in ("category", "tonnes", "grade", "contained", "unit", "basis")}
     details, perfect = [], 0
     for gi, g in enumerate(gt_rows):
         det = {"gt": f"{g['deposit']} [{g['category']}]", "matched": gi in m, "fields": {}}
@@ -249,6 +270,11 @@ def main():
                       "tonnes": (g["tonnes"] is not None, field_pass(g["tonnes"], p["tonnes"])),
                       "grade": (g["grade"] is not None, field_pass(g["grade"], p["grade"])),
                       "contained": (g["contained"] is not None, field_pass(g["contained"], p["contained"])),
+                      "unit": (bool(g["grade_unit"] or g["metal_unit"] or cfg["grade_unit"]),
+                               bool(unit_pass(g["grade_unit"] or cfg["grade_unit"],
+                                              p["grade_unit"]) and
+                                    unit_pass(g["metal_unit"] or cfg["metal_unit"],
+                                              p["metal_unit"]))),
                       "basis": (g["basis"] is not None, basis_pass(g["basis"], p["basis"]))}
             for name, (scored, ok) in checks.items():
                 if not scored:
@@ -267,19 +293,28 @@ def main():
     miss = [d["gt"] for d in details if not d["matched"]]
 
     print(f"== evaluate ({'冒烟测试' if demo else '真实GT'}: {src}) ==")
+    print(f"评分协议: 字段级 accuracy, 容差 ±{int(TOLERANCE * 100)}%; 缺失/null 记错; "
+          f"单位必须与报告配置一致({cfg['grade_unit']} / {cfg['metal_unit']})")
     print(f"GT 记录 {len(gt_rows)} 条 (跳过聚合 {n_skip}) | 抽取记录 {len(pred_rows)} 条")
     print(f"匹配 {len(m)}/{len(gt_rows)} | GT 未匹配 {len(miss)} | 抽取富余 {len(extras)}"
           f"(富余含 GT 未覆盖页的记录, 不扣分)")
     if miss:
         print("GT 未匹配(核对字段映射/名称):", miss[:8])
     print(f"字段级准确率 (±{int(TOLERANCE*100)}%): {cor}/{tot} = {cor/tot*100 if tot else 0:.1f}%")
-    for name in ("category", "tonnes", "grade", "contained", "basis"):
+    for name in ("category", "tonnes", "grade", "contained", "unit", "basis"):
         n, c = fields[name]
         if n:
             print(f"  {name:<9}: {c}/{n}")
     print(f"记录级全对: {perfect}/{len(m)}")
 
     report = {"source": src, "tolerance": TOLERANCE,
+              "protocol": {"metric": "field_accuracy", "tolerance": TOLERANCE,
+                           "missing_counts_as_wrong": True,
+                           "unit_must_match": True,
+                           "unit_reference": {"grade_unit": cfg["grade_unit"],
+                                              "metal_unit": cfg["metal_unit"]},
+                           "scored_fields": ["category", "tonnes", "grade", "contained",
+                                             "unit", "basis"]},
               "summary": {"gt_records": len(gt_rows), "matched": len(m), "field_total": tot,
                           "field_correct": cor, "field_accuracy": round(cor / tot, 4) if tot else None,
                           "perfect_records": perfect, "skipped_aggregates": n_skip,

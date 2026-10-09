@@ -1,11 +1,29 @@
 {
-  "source": "C:\\Users\\86177\\PycharmProjects\\ni43-101-adversarial\\data\\gt\\barrick_p17_gt.json",
+  "source": "C:\\Users\\86177\\PycharmProjects\\ni43-101-adversarial\\data\\ground_truth\\barrick_p17_gt.json",
   "tolerance": 0.05,
+  "protocol": {
+    "metric": "field_accuracy",
+    "tolerance": 0.05,
+    "missing_counts_as_wrong": true,
+    "unit_must_match": true,
+    "unit_reference": {
+      "grade_unit": "g/t",
+      "metal_unit": "Moz"
+    },
+    "scored_fields": [
+      "category",
+      "tonnes",
+      "grade",
+      "contained",
+      "unit",
+      "basis"
+    ]
+  },
   "summary": {
     "gt_records": 7,
     "matched": 7,
-    "field_total": 35,
-    "field_correct": 35,
+    "field_total": 42,
+    "field_correct": 42,
     "field_accuracy": 1.0,
     "perfect_records": 7,
     "skipped_aggregates": 0,
@@ -23,6 +41,10 @@
         "correct": 7
       },
       "contained": {
+        "scored": 7,
+        "correct": 7
+      },
+      "unit": {
         "scored": 7,
         "correct": 7
       },
@@ -151,6 +173,11 @@
           "pred": 7.9,
           "pass": true
         },
+        "unit": {
+          "gt": null,
+          "pred": null,
+          "pass": true
+        },
         "basis": {
           "gt": "100% Basis",
           "pred": "100% Basis",
@@ -181,6 +208,11 @@
         "contained": {
           "gt": 7.9,
           "pred": 7.9,
+          "pass": true
+        },
+        "unit": {
+          "gt": null,
+          "pred": null,
           "pass": true
         },
         "basis": {
@@ -215,6 +247,11 @@
           "pred": 1.7,
           "pass": true
         },
+        "unit": {
+          "gt": null,
+          "pred": null,
+          "pass": true
+        },
         "basis": {
           "gt": "100% Basis",
           "pred": "100% Basis",
@@ -245,6 +282,11 @@
         "contained": {
           "gt": 0.59,
           "pred": 0.59,
+          "pass": true
+        },
+        "unit": {
+          "gt": null,
+          "pred": null,
           "pass": true
         },
         "basis": {
@@ -279,6 +321,11 @@
           "pred": 2.4,
           "pass": true
         },
+        "unit": {
+          "gt": null,
+          "pred": null,
+          "pass": true
+        },
         "basis": {
           "gt": "100% Basis",
           "pred": "100% Basis",
@@ -311,6 +358,11 @@
           "pred": 3,
           "pass": true
         },
+        "unit": {
+          "gt": null,
+          "pred": null,
+          "pass": true
+        },
         "basis": {
           "gt": "100% Basis",
           "pred": "100% Basis",
@@ -341,6 +393,11 @@
         "contained": {
           "gt": 0.27,
           "pred": 0.27,
+          "pass": true
+        },
+        "unit": {
+          "gt": null,
+          "pred": null,
           "pass": true
         },
         "basis": {

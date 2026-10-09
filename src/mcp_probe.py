@@ -102,8 +102,8 @@ def main():
         print(f"   暴露工具: {tools}")
         need = {"list_reports", "deliverable_summary", "needs_human_review", "top_deposits",
                 "records_for_page", "run_pipeline", "evaluate_gt", "run_fault_drill",
-                "list_report_configs"}
-        check(need <= set(tools) and len(tools) == 9, f"工具数量与名称正确({len(tools)} 个)")
+                "list_report_configs", "spec_results"}
+        check(need <= set(tools) and len(tools) == 10, f"工具数量与名称正确({len(tools)} 个)")
 
         print("3. 只读工具(离线, 免费)")
         r = s.call(3, "tools/call", {"name": "deliverable_summary", "arguments": {}})
@@ -121,7 +121,7 @@ def main():
 
         print("4. 费用护栏: 没有 confirm 必须拒绝")
         r = s.call(7, "tools/call", {"name": "run_pipeline",
-                                     "arguments": {"pdf": "data/reports/barrick.pdf"}})
+                                     "arguments": {"pdf": "data/pdfs/barrick.pdf"}})
         t = text_of(r)
         refused = "refused" in t and "confirm" in t
         check(refused and r["result"].get("isError") is False,
@@ -137,7 +137,7 @@ def main():
 
         print("6. confirm + dry_run: 只返回计划, 不烧钱")
         r = s.call(9, "tools/call", {"name": "run_pipeline",
-                                     "arguments": {"pdf": "data/reports/barrick.pdf",
+                                     "arguments": {"pdf": "data/pdfs/barrick.pdf",
                                                    "confirm": True, "dry_run": True}})
         t = text_of(r)
         check("dry_run" in t and "api_calls_estimate" in t, f"计划 -> {t[:160]}")
@@ -151,13 +151,16 @@ def main():
         print("8. GT 对账工具(离线免费)与演习护栏")
         r = s.call(12, "tools/call", {"name": "evaluate_gt", "arguments": {"gt": "p192"}})
         t = text_of(r)
-        check("42/42" in t and "210/210" in t, f"evaluate_gt(p192) -> {t.replace(chr(10), ' | ')[:170]}")
+        check("42/42" in t and "100.0%" in t, f"evaluate_gt(p192) -> {t.replace(chr(10), ' | ')[:170]}")
         r = s.call(13, "tools/call", {"name": "evaluate_gt", "arguments": {"gt": "p17"}})
         t = text_of(r)
         check("7/7" in t, f"evaluate_gt(p17) -> {t.replace(chr(10), ' | ')[:140]}")
         r = s.call(14, "tools/call", {"name": "run_fault_drill", "arguments": {"always": True}})
         t = text_of(r)
         check("refused" in t and "confirm" in t, "run_fault_drill 无 confirm 被拒绝")
+        r = s.call(15, "tools/call", {"name": "spec_results", "arguments": {}})
+        t = text_of(r)
+        check("indicated" in t and "counts" in t, f"spec_results -> {t.replace(chr(10), ' ')[:110]}")
     finally:
         err = " | ".join(s.err)          # 由后台线程收集, 不能直接 read() 否则会被阻塞
         s.close()

@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-10-09 13:50:07",
+  "criterion": "当抽取明显错误时, 系统必须 abstain 而不是硬给",
+  "drill_single_poison": {
+    "expect": "ACCEPT",
+    "actual": "ACCEPT",
+    "rounds": 1,
+    "pass": true
+  },
+  "drill_persistent_poison": {
+    "expect": "ABSTAIN",
+    "actual": "ABSTAIN",
+    "rounds": 1,
+    "pass": true
+  },
+  "pass": true
+}

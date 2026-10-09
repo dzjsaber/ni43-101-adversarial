@@ -11,6 +11,8 @@ import time
 from collections import Counter
 from pathlib import Path
 
+import report_config
+
 ROOT = Path(__file__).resolve().parents[1]
 
 EXTRACTOR_TEMPLATES = [
@@ -90,6 +92,7 @@ def write_rules(path: Path, title: str, rules, hits, n_real):
 
 
 def main():
+    report_config.setup_stdio()
     log = ROOT / "data" / "evolution.jsonl"
     if not log.exists():
         raise SystemExit("evolution.jsonl 不存在 - 先跑 pipeline/selftest 攒失败案例")

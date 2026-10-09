@@ -4,7 +4,7 @@ extractor.py — 调 DeepSeek 从候选页抽取矿产资源记录
 输出: data/processed/extracted.jsonl (每行一条记录)
 前置: 环境变量 DEEPSEEK_API_KEY
 进化: 若存在 data/evolved_rules.txt, 自动追加进 system prompt
-配置: 商品/单位/守恒因子来自 data/reports/<报告名>.config.json (见 report_config.py)
+配置: 商品/单位/守恒因子来自 data/pdfs/<报告名>.config.json (见 report_config.py)
 """
 import json
 import os
@@ -22,6 +22,18 @@ MODEL = "deepseek-chat"
 MIN_SCORE = 10      # 只喂 score>=10 的高分页
 MAX_PAGES = 12      # 送审上限,防烧钱
 RETRIES = 3
+
+# 题目要求: 打印每次调用的耗时与 token 消耗。这里做全局累计, 收尾打印汇总。
+USAGE = {"calls": 0, "seconds": 0.0, "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+
+
+def reset_usage() -> None:
+    for k in USAGE:
+        USAGE[k] = 0 if k == "calls" else (0.0 if k == "seconds" else 0)
+
+
+def usage_summary() -> dict:
+    return dict(USAGE)
 
 
 def _evolved_rules() -> str:
@@ -120,6 +132,7 @@ def use_config(cfg=None):
 
 
 def call_llm(user_text: str, api_key: str) -> str:
+    t0 = time.time()
     body = {
         "model": MODEL,
         "temperature": 0,               # 抽取要确定性,不要创造性
@@ -134,7 +147,18 @@ def call_llm(user_text: str, api_key: str) -> str:
     r = requests.post(API_URL, json=body,
                       headers={"Authorization": f"Bearer {api_key}"}, timeout=120)
     r.raise_for_status()
-    return r.json()["choices"][0]["message"]["content"]
+    data = r.json()
+    dt = time.time() - t0
+    u = data.get("usage") or {}
+    USAGE["calls"] += 1
+    USAGE["seconds"] += dt
+    for key, field in (("prompt_tokens", "prompt_tokens"),
+                       ("completion_tokens", "completion_tokens"),
+                       ("total_tokens", "total_tokens")):
+        USAGE[key] += int(u.get(field) or 0)
+    print(f"    [extractor] {MODEL} 耗时 {dt:.1f}s | tokens: prompt={u.get('prompt_tokens', '?')} "
+          f"completion={u.get('completion_tokens', '?')} total={u.get('total_tokens', '?')}")
+    return data["choices"][0]["message"]["content"]
 
 
 def parse_records(raw: str) -> list:
@@ -166,15 +190,15 @@ def parse_records(raw: str) -> list:
 
 
 def main(jsonl_path: Path):
-    api_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
-    if not api_key:
-        sys.exit("未找到 DEEPSEEK_API_KEY。设置: setx DEEPSEEK_API_KEY 再重开终端")
+    report_config.setup_stdio()
+    api_key = report_config.api_key("DEEPSEEK_API_KEY")
+    reset_usage()
 
     cfg = use_config(report_config.load(jsonl_path))
     print("报告配置: " + report_config.summarize(cfg))
     if cfg["commodity"] != "Au" and not (cfg.get("fewshot") or {}).get("user"):
         print("  !! 警告: 非 Au 报告但没有提供该商品的 few-shot 样例, 正在复用 Au 示例, 可能误导模型; "
-              "请在 data/reports/%s.config.json 里补 fewshot" % report_config.config_path(jsonl_path).name)
+              "请在 data/pdfs/%s.config.json 里补 fewshot" % report_config.config_path(jsonl_path).name)
     pages = [json.loads(l) for l in jsonl_path.read_text(encoding="utf-8").splitlines() if l.strip()]
     todo = sorted([p for p in pages if p["score"] >= MIN_SCORE],
                   key=lambda p: -p["score"])[:MAX_PAGES]
@@ -204,6 +228,9 @@ def main(jsonl_path: Path):
             time.sleep(1)
 
     print(f"\nOK: 共 {total} 条记录 -> {out_path}")
+    print(f"    API 调用 {USAGE['calls']} 次, 累计耗时 {USAGE['seconds']:.1f}s, "
+          f"tokens: prompt={USAGE['prompt_tokens']} completion={USAGE['completion_tokens']} "
+          f"total={USAGE['total_tokens']}")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 {
  "_readme": "Partial GT: Barrick Carlin 2024 page 17 (Table 1-1 Mineral Resources Summary, 100% Basis), hand-transcribed from the printed page and re-verified line by line.",
- "_units": "grade in g/t Au, metal in Moz Au; report config: data/reports/barrick.config.json",
+ "_units": "grade in g/t Au, metal in Moz Au; report config: data/pdfs/barrick.config.json",
  "_corrections_vs_v1": [
   "REMOVED 4 rows labelled 'Underground': on page 17 that row is printed as 'Underground' / '<12 numbers>' / 'Total' - it is the Underground Total AGGREGATE, not a deposit. Old GT (and the extractor) both treated it as a deposit.",
   "ADDED the Indicated rows that the old GT (and extractor) silently dropped: Open Pits Indicated 120/1.99/7.9 and Carlin Stockpiles Indicated 32/2.34/2.4.",

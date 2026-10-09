@@ -1,6 +1,6 @@
 {
  "_readme": "Leak-free GT: Barrick Carlin 2024 page 192 (Table 14-22 Mineral Resource Statement, Barrick Attributable Basis), 42 rows hand-transcribed from the printed page. Chosen because this table's tonnes/contained values appear nowhere in the extractor prompt (only grades coincide with Table 14-21, since grades do not scale with ownership).",
- "_units": "grade in g/t Au, metal in Moz Au; report config: data/reports/barrick.config.json",
+ "_units": "grade in g/t Au, metal in Moz Au; report config: data/pdfs/barrick.config.json",
  "_notes": [
   "Aggregate rows (Open Pit Attrib., Surface Attrib., Underground Attributable, Carlin Barrick Attributable Total) are deliberately excluded - same rule the extractor must follow.",
   "'Goldstrike' is printed twice on this page (Surface and Underground). The section field keeps them distinguishable; the pipeline schema has no section field yet, so evaluate.py matches on values as a tie-breaker.",

@@ -5,8 +5,8 @@ report_config.py — 按报告配置商品 / 单位 / 守恒公式 / 定位关�
 contained_moz、critic 的物理规则、preprocess 的关键词、few-shot 表头)。换一份锂/钽报告
 就会"守恒全过、数字全错"。改成按报告读配置后, 新增报告只需加一个 JSON。
 
-配置文件位置: data/reports/<报告名>.config.json (与 PDF 同目录同主名)
-  例: data/reports/barrick.pdf  <->  data/reports/barrick.config.json
+配置文件位置: data/pdfs/<报告名>.config.json (与 PDF 同目录同主名)
+  例: data/pdfs/barrick.pdf  <->  data/pdfs/barrick.config.json
 没有配置文件时退回 Au 默认值(g/t → Moz), 行为与本层引入前完全一致。
 
 守恒关系统一写成一条线性式(其它商品都能套进来):
@@ -18,10 +18,11 @@ contained_moz、critic 的物理规则、preprocess 的关键词、few-shot 表�
   Ta2O5 (ppm → kt):  factor = 0.001
 """
 import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-REPORTS_DIR = ROOT / "data" / "reports"
+REPORTS_DIR = ROOT / "data" / "pdfs"
 
 # 字段名一律用中性名: tonnes_mt / grade(+grade_unit) / metal(+metal_unit)
 AU_OZ_PER_T = 31.1035
@@ -113,3 +114,39 @@ def summarize(cfg: dict) -> str:
     return (f"{cfg['commodity']} | grade {cfg['grade_unit']} | metal {cfg['metal_unit']} "
             f"| 守恒 factor={cfg['contained_factor']:.6g} | 容差 ±{cfg['tolerance']:.0%} "
             f"| 来源 {cfg.get('_source', '默认')}")
+
+
+def load_env() -> bool:
+    """
+    加载 .env(题目要求 python-dotenv 支持)。装了就加载, 没装就静默跳过 ——
+    因为密钥本来就可以直接用环境变量传, dotenv 只是可选便利。
+    """
+    try:
+        from dotenv import load_dotenv                     # noqa: PLC0415
+    except ImportError:
+        return False
+    load_dotenv()
+    return True
+
+
+def setup_stdio() -> None:
+    """
+    把标准输出/错误切成 UTF-8。Windows 控制台默认 GBK, 本项目的日志里有 ± / → / 中文,
+    不切会在某些宿主(管道、Cherry Studio 等)下直接 UnicodeEncodeError。
+    """
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
+
+def api_key(name: str, required: bool = True) -> str:
+    """统一取密钥: 先 .env, 再环境变量; 缺失时给可执行的提示。"""
+    import os
+    load_env()
+    val = (os.environ.get(name) or "").strip()
+    if not val and required:
+        raise SystemExit(f"缺少环境变量 {name}。可 setx {name} \"...\" 后重开终端, "
+                         f"或把 {name}=... 写进项目根目录的 .env(需 pip install python-dotenv)")
+    return val

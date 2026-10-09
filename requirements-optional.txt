@@ -1,0 +1,3 @@
+# 可选依赖(缺了项目照跑, 代码里都是 try/except 降级)
+python-dotenv>=1.0    # 支持项目根目录 .env 读取 DEEPSEEK_API_KEY / ZHIPU_API_KEY
+tqdm>=4.66            # 扫描 300+ 页 PDF 时的进度条(没装则退化为每 25 页打印一次)

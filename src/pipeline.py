@@ -160,12 +160,12 @@ def run_page(page, ds_key, zp_key):
 
 
 def main(pages_path):
-    ds_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
-    zp_key = os.environ.get("ZHIPU_API_KEY", "").strip()
-    missing = [n for n, k in (("DEEPSEEK_API_KEY", ds_key),
-                              ("ZHIPU_API_KEY", zp_key)) if not k]
-    if missing:
-        sys.exit("缺少环境变量: " + ", ".join(missing) + " (setx 后需重开终端)")
+    report_config.setup_stdio()
+    ds_key = report_config.api_key("DEEPSEEK_API_KEY")
+    zp_key = report_config.api_key("ZHIPU_API_KEY")
+    extractor.reset_usage()
+    critic.reset_usage()
+    t_start = time.time()
 
     pages = [json.loads(l) for l in pages_path.read_text(encoding="utf-8").splitlines() if l.strip()]
     eligible = sorted([p for p in pages if p["score"] >= MIN_SCORE], key=lambda p: -p["score"])
@@ -245,6 +245,11 @@ def main(pages_path):
     n_dup = sum(1 for r in stamped if r.get("duplicate_of_page"))
     print(f"    终审分类: {by_class} (跨页重复标注 {n_dup} 条); "
           f"可交付明细 {len(detail)} 条 -> {detail_path}")
+
+    eu, cu = extractor.usage_summary(), critic.usage_summary()
+    print(f"    本次 API: extractor {eu['calls']} 次/{eu['seconds']:.1f}s/"
+          f"{eu['total_tokens']} tokens; critic {cu['calls']} 次/{cu['seconds']:.1f}s/"
+          f"{cu['total_tokens']} tokens; 总耗时 {time.time() - t_start:.1f}s")
 
 
 if __name__ == "__main__":

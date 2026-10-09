@@ -1,2 +1,8 @@
+# 必需(缺一不可): 直连两家厂商的 HTTP API + 解析 PDF
 requests>=2.28
 pdfplumber>=0.11
+
+# 可选依赖见 requirements-optional.txt(python-dotenv / tqdm):
+# 项目对它们都是 try/except 降级 —— 装了更好用, 没装照样跑。
+# 说明: 题目示例用 openai SDK 调各家模型, 本项目直接 requests 调 HTTP 端点
+#       (少一层依赖、超时/重试更可控), 行为等价。

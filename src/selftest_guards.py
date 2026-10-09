@@ -19,6 +19,8 @@ import guards                                                    # noqa: E402
 import pipeline                                                  # noqa: E402
 import report_config                                             # noqa: E402
 
+report_config.setup_stdio()
+
 FAILED = []
 
 
@@ -94,7 +96,7 @@ sys.argv = [str(ROOT / "src" / "extractor.py")]
 ns = runpy.run_path(str(ROOT / "src" / "extractor.py"), run_name="_leak_probe")
 blob = ns["SYSTEM_PROMPT"] + ns["FEWSHOT_USER"] + ns["FEWSHOT_ASSISTANT"]
 for gt_name in ("barrick_p17_gt.json", "barrick_p192_gt.json"):
-    gt = json.loads((ROOT / "data" / "gt" / gt_name).read_text(encoding="utf-8"))["records"]
+    gt = json.loads((ROOT / "data" / "ground_truth" / gt_name).read_text(encoding="utf-8"))["records"]
     leaks = []
     for r in gt:
         r = report_config.normalize(r)

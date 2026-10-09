@@ -3,7 +3,7 @@ mineral_mcp.py — MCP 工具层: 费用护栏 + 路径白名单 + 只读查询
 
 两条硬规则(审查关注点):
   1) 任何会真实调用付费 API 的动作(run_pipeline)必须显式 confirm=True, 否则拒绝执行;
-  2) 只有 data/reports/ 白名单目录内的 PDF 能被处理, 其它路径一律拒绝。
+  2) 只有 data/pdfs/ 白名单目录内的 PDF 能被处理, 其它路径一律拒绝。
 
 用法:
   python src/mineral_mcp.py --selftest    # 零成本自检: 护栏/白名单必须生效(不装 mcp 包也能跑)
@@ -26,8 +26,9 @@ from pathlib import Path
 import report_config
 
 ROOT = Path(__file__).resolve().parents[1]
-REPORTS_DIR = (ROOT / "data" / "reports").resolve()
+REPORTS_DIR = (ROOT / "data" / "pdfs").resolve()
 PROCESSED = ROOT / "data" / "processed"
+LOG = PROCESSED / "last_mcp_run.log"        # 子进程日志(stdout 必须留给 MCP 协议报文)
 
 API_CALLS_PER_PAGE = 3          # 抽取 + critic 评分 + 可能的返工(保守估计)
 USD_PER_CALL_ESTIMATE = 0.002   # 粗估, 仅用于给用户一个量级
@@ -73,11 +74,49 @@ def run_pipeline(pdf, pages=None, confirm=False, dry_run=True, max_pages=12) -> 
     if dry_run:
         return {"dry_run": True, "pdf": str(path), "plan": estimate,
                 "note": "未调用任何 API; 去掉 dry_run 才会真正执行"}
-    subprocess.check_call([sys.executable, str(ROOT / "src" / "preprocess.py"), str(path)])
+    # 关键: MCP 走 stdio 协议, 子进程 stdout 绝不能继承到本进程(会污染协议报文),
+    # 因此把执行日志重定向到文件, 只把摘要返回给宿主。
+    rc = _run_logged(["src/preprocess.py", str(path)])
     pages_jsonl = PROCESSED / (path.stem + ".pages.jsonl")
-    subprocess.check_call([sys.executable, str(ROOT / "src" / "pipeline.py"), str(pages_jsonl)])
+    rc |= _run_logged(["src/pipeline.py", str(pages_jsonl)])
+    if rc != 0:
+        return {"executed": False, "exit_code": rc, "log": str(LOG),
+                "hint": "查看日志定位失败原因"}
     return {"executed": True, "pdf": str(path), "pages_jsonl": str(pages_jsonl),
-            "deliverable": str(PROCESSED / "pipeline.detail.jsonl")}
+            "deliverable": str(PROCESSED / "pipeline.detail.jsonl"), "log": str(LOG)}
+
+
+def _run_logged(cmd_args) -> int:
+    """跑子进程并把 stdout/stderr 写进日志文件 —— MCP 的 stdout 只能有协议报文。"""
+    PROCESSED.mkdir(parents=True, exist_ok=True)
+    with LOG.open("a", encoding="utf-8") as f:
+        f.write(f"\n$ python {' '.join(cmd_args)}\n")
+        f.flush()
+        return subprocess.call([sys.executable] + list(cmd_args), cwd=str(ROOT),
+                               stdout=f, stderr=subprocess.STDOUT)
+
+
+def spec_results() -> str:
+    """
+    题目要求的交付结构: output/results.json(indicated/inferred/评分/abstain)。
+    文件不存在就现算一份; 返回摘要 + 前几条, 避免把上百条记录塞进对话。
+    """
+    p = ROOT / "output" / "results.json"
+    if not p.exists():
+        sys.path.insert(0, str(ROOT / "src"))
+        import spec_export                                     # noqa: PLC0415
+        p = spec_export.write()
+    d = json.loads(p.read_text(encoding="utf-8"))
+    return json.dumps({
+        "file": str(p),
+        "counts": d.get("counts"),
+        "score": d.get("score"),
+        "abstain": d.get("abstain"),
+        "mark_for_human": d.get("mark_for_human"),
+        "last_score": d.get("last_score"),
+        "indicated_sample": d.get("indicated", [])[:3],
+        "inferred_sample": d.get("inferred", [])[:3],
+    }, ensure_ascii=False, indent=2)
 
 
 def _load(name):
@@ -158,11 +197,11 @@ def evaluate_gt(gt: str = "p192") -> str:
     """
     table = {"p17": "barrick_p17_gt.json", "p192": "barrick_p192_gt.json"}
     name = table.get(str(gt).lower(), str(gt))
-    path = (ROOT / "data" / "gt" / name)
+    path = (ROOT / "data" / "ground_truth" / name)
     if not path.exists():
         return f"GT 文件不存在: {path} (可用: {', '.join(sorted(table))})"
     try:
-        path.resolve().relative_to((ROOT / "data" / "gt").resolve())
+        path.resolve().relative_to((ROOT / "data" / "ground_truth").resolve())
     except ValueError:
         return "只允许 data/gt 目录下的 GT 文件"
     r = subprocess.run([sys.executable, str(ROOT / "src" / "evaluate.py"), str(path)],
@@ -210,7 +249,7 @@ def selftest() -> int:
             failed.append(msg)
 
     print("1. 费用护栏: 没有 confirm 一律拒绝")
-    r = run_pipeline("data/reports/barrick.pdf")
+    r = run_pipeline("data/pdfs/barrick.pdf")
     check(r.get("refused") is True and "confirm" in r.get("reason", ""),
           f"run_pipeline(无 confirm) -> {r.get('refused')} ({r.get('reason', '')[:40]}...)")
 
@@ -270,7 +309,7 @@ def _tool_result(value, is_error=False):
 def tool_definitions():
     return [
         {"name": "list_reports",
-         "description": "列出白名单目录 data/reports 内可处理的 NI 43-101 报告(只读, 免费)",
+         "description": "列出白名单目录 data/pdfs 内可处理的 NI 43-101 报告(只读, 免费)",
          "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False}},
         {"name": "deliverable_summary",
          "description": "交付物摘要: 记录数/按页/按终审分类/弃权页(只读, 免费)",
@@ -295,7 +334,7 @@ def tool_definitions():
          "description": "跑完整对抗管线。会真实调用付费 API, 未传 confirm=true 一律拒绝; "
                         "confirm=true + dry_run=true 只返回计划(不花钱)",
          "inputSchema": {"type": "object", "properties": {
-             "pdf": {"type": "string", "description": "data/reports 白名单内的 PDF"},
+             "pdf": {"type": "string", "description": "data/pdfs 白名单内的 PDF"},
              "pages": {"type": "array", "items": {"type": "integer"}},
              "confirm": {"type": "boolean", "default": False},
              "dry_run": {"type": "boolean", "default": True},
@@ -317,6 +356,9 @@ def tool_definitions():
         {"name": "list_report_configs",
          "description": "列出每份报告的商品/单位/守恒因子配置(只读, 免费)",
          "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False}},
+        {"name": "spec_results",
+         "description": "题目交付结构 output/results.json 的摘要(indicated/inferred/评分/abstain, 只读免费)",
+         "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False}},
     ]
 
 
@@ -330,6 +372,7 @@ TOOLS = {
     "evaluate_gt": evaluate_gt,
     "run_fault_drill": run_fault_drill,
     "list_report_configs": list_report_configs,
+    "spec_results": spec_results,
 }
 
 

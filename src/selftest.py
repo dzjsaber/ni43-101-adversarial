@@ -95,6 +95,8 @@ def drill(pages: list, name: str, poison_always: bool):
 
 
 def main(pages_path: Path):
+    report_config.setup_stdio()
+    report_config.load_env()
     print("报告配置: " + report_config.summarize(pipeline.use_config(report_config.load(pages_path))))
     seed_real_false_positive()
     test_conservation_gate()
@@ -116,6 +118,25 @@ def main(pages_path: Path):
                        "detail": {"drill1": r1["verdict"], "drill2": r2["verdict"]},
                        "lesson": "故障注入演习: 守恒闸+critic 双层拦截; 修不好则弃权"})
     print("\nevolution.jsonl 已追加: 真实误报种子 + 两场演习完整轨迹")
+
+    # 题目最看重的行为(明显错误时 abstain 而不是硬给)落成机器可读的验收产物
+    out = ROOT / "output"
+    out.mkdir(parents=True, exist_ok=True)
+    report = {
+        "generated_at": now(),
+        "criterion": "当抽取明显错误时, 系统必须 abstain 而不是硬给",
+        "drill_single_poison": {"expect": "ACCEPT", "actual": r1["verdict"],
+                                "rounds": r1["rounds"],
+                                "pass": r1["verdict"].startswith("ACCEPT")},
+        "drill_persistent_poison": {"expect": "ABSTAIN", "actual": r2["verdict"],
+                                    "rounds": r2["rounds"],
+                                    "pass": r2["verdict"] == "ABSTAIN"},
+    }
+    report["pass"] = (report["drill_single_poison"]["pass"]
+                      and report["drill_persistent_poison"]["pass"])
+    (out / "protocol_check.json").write_text(
+        json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"弃权行为验收 -> {out / 'protocol_check.json'} (pass={report['pass']})")
 
 
 if __name__ == "__main__":
