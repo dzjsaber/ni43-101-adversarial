@@ -172,7 +172,7 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | `.gitignore` | 忽略 `__pycache__/`、`venv/`、`.env`、MCP 运行日志 |
 | `.env.example` | 密钥模板(复制成 `.env` 用;真实密钥永不入库) |
 | `.gitattributes` | 统一 LF 换行、声明二进制文件(避免跨平台整文件 diff) |
-| `LICENSE` | MIT 许可(**发布前请把版权人 `<在此填写你的姓名或 GitHub 用户名>` 改成你自己的名字**) |
+| `LICENSE` | MIT 许可(版权人当前为 GitHub 账号 `dzjsaber`;想改成真名直接编辑该文件) |
 
 > 依赖说明:题目示例用 `openai` SDK 调各家模型, 本项目直接用 `requests` 调两家厂商的
 > HTTP 端点(DeepSeek `/chat/completions`、智谱 `openai.bigapi` 兼容端点), 少一层依赖、
