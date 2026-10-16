@@ -13,6 +13,7 @@ from pathlib import Path
 import requests
 
 import report_config
+import usage_log
 
 ROOT = Path(__file__).resolve().parents[1]
 API_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
@@ -108,6 +109,7 @@ def call_glm(user_text: str, api_key: str) -> str:
     USAGE["seconds"] += dt
     for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
         USAGE[key] += int(u.get(key) or 0)
+    usage_log.record_usage("critic", MODEL, dt, u)         # 逐调用明细(未设 NI43_USAGE_LOG 时为空操作)
     print(f"    [critic] {MODEL} 耗时 {dt:.1f}s | tokens: prompt={u.get('prompt_tokens', '?')} "
           f"completion={u.get('completion_tokens', '?')} total={u.get('total_tokens', '?')}")
     return data["choices"][0]["message"]["content"]
@@ -146,6 +148,7 @@ def main(pages_path: Path, extracted_path: Path):
 
     out_path = ROOT / "data" / "processed" / "critiques.jsonl"
     n_pass = n_fail = 0
+    usage_log.truncate()
     with out_path.open("w", encoding="utf-8") as f:
         for k, pg in enumerate(todo, 1):
             page = pages[pg]
@@ -155,6 +158,7 @@ def main(pages_path: Path, extracted_path: Path):
             crit = None
             for attempt in range(1, RETRIES + 1):
                 try:
+                    usage_log.set_page(pg)
                     raw = call_glm(user_msg, api_key)
                     crit = parse_critique(raw)
                     break

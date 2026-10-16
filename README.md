@@ -48,6 +48,7 @@ python src/run_all.py data/pdfs/<公司>.pdf data/ground_truth/<公司>_gt.json
 | 验收③:`output/evolution.jsonl` 有失败 case | `pipeline/evolution_log.py --export` | ✅ 快照当前 60+ 条事件(权威文件 `data/evolution.jsonl`, 只 append) |
 | 验收④:`python pipeline/replay_evolution.py` 输出改进前后评分对比 | `src/replay_evolution.py` | ✅ 输出 A/B 表并写 `output/replay_ab.json` |
 | 验收⑤:RUN.md 写清 3 个 PDF 的抽取结果摘要 | `RUN.md` 第 4 节 | ✅ 提供 Barrick 实测摘要 + Newmont/Pilbara 标注"输入缺失, 无法验证" |
+| **平台化(任务书 P1)**: 一眼看懂结果 + 一键回归 | `app/report.py`、`app/regress.py` | ✅ `python app/regress.py` 出 `output/report.html`(机制/逐页/结果/审计/abstain/对账/成本/自检), 零成本;`--run` 加真实重跑并自动恢复产物 |
 
 ## 2. 数据流(方括号内是本次 Barrick 的实测数字)
 
@@ -72,6 +73,8 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 行为验收: src/selftest.py → output/protocol_check.json(明显错误时必须 abstain)
 对外接口: src/mineral_mcp.py(MCP 工具层 10 个工具, 零依赖) + src/mcp_probe.py(宿主握手探针)
 一键全链路: src/run_all.py <pdf> [gt.json]      文档防漂移: src/check_docs.py
+平台壳: app/regress.py(跑自检 + 出报告) -> output/report.html(自包含单页) + output/regress.json
+        逐调用用量: app/regress.py --run 自动打开 NI43_USAGE_LOG -> output/usage.jsonl
 ```
 
 ## 3. 评分协议(题目最看重的一节)
@@ -104,7 +107,7 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 
 ## 4. 文件清单
 
-### 4.1 题面指定的入口包 `pipeline/`(8 个, 薄封装, 逻辑在 `src/`)
+### 4.1 题面指定的入口包 `pipeline/`(8 个) —— 薄封装, 逻辑在 `src/`
 
 | 文件 | 行数 | 对应题目模块 | 用法 / 产出 |
 |---|---|---|---|
@@ -117,17 +120,17 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | `pipeline/__init__.py` | 20 | 包引导(把仓库根与 `src/` 加进 `sys.path`) | — |
 | `pipeline/_bootstrap.py` | 21 | 路径引导:清掉脚本自身目录, 避免 `pipeline/extractor.py` 里的 `import extractor` 解析到自己 | 被同目录入口模块 import |
 
-### 4.2 核心实现 `src/`(16 个)
+### 4.2 核心实现 `src/`(17 个)
 
 | 文件 | 行数 | 作用 |
 |---|---|---|
 | `src/report_config.py` | 152 | **按报告配置**商品/单位/守恒因子/关键词/few-shot;`.env` 加载;UTF-8 标准流;字段名归一(兼容旧产物);统一取密钥 |
 | `src/preprocess.py` | 71 | pdfplumber 扫描 + 关键词/表格定位候选资源表页(tqdm 可选) |
-| `src/extractor.py` | 238 | DeepSeek 抽取;prompt 按配置渲染;页码由代码盖戳;**每次调用打印耗时与 token** |
-| `src/critic.py` | 194 | GLM 审计 1-10;物理规则随单位切换;同样打印耗时与 token |
-| `src/pipeline.py` | 257 | 主循环:守恒/结构闸 → critic → 指控核验 → ≤3 轮返工 → ACCEPT/ABSTAIN → 交付前终审 |
+| `src/extractor.py` | 242 | DeepSeek 抽取;prompt 按配置渲染;页码由代码盖戳;**每次调用打印耗时与 token** 并落逐调用明细 |
+| `src/critic.py` | 198 | GLM 审计 1-10;物理规则随单位切换;同样打印耗时与 token 并落逐调用明细 |
+| `src/pipeline.py` | 260 | 主循环:守恒/结构闸 → critic → 指控核验 → ≤3 轮返工 → ACCEPT/ABSTAIN → 交付前终审 |
 | `src/guards.py` | 193 | **确定性终审层**:聚合行、三元组残缺、列组完整、M&I 自洽、critic 指控逐字核验、交付分类 |
-| `src/evaluate.py` | 335 | **评分协议**:字段级 ±5% accuracy + 单位核对 + 报告 `protocol` 块 |
+| `src/evaluate.py` | 364 | **评分协议**:字段级 ±5% accuracy + 单位核对 + 报告 `protocol` 块;`diff_pairs()` 供报告页复用 |
 | `src/spec_export.py` | 125 | 导出题目要求结构 `output/results.json`(indicated/inferred/评分/abstain) |
 | `src/run_all.py` | 88 | 一份报告一条命令走完 7 步 |
 | `src/selftest.py` | 145 | 故障注入演习 + 写 `output/protocol_check.json` |
@@ -136,7 +139,19 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | `src/replay_evolution.py` | 120 | 进化规则 A/B 复跑(改进前后评分与违规对比) |
 | `src/mineral_mcp.py` | 471 | MCP 工具层:零依赖 stdio + 费用护栏 + 路径白名单 + 10 个工具(对 resources/prompts 探测友好) |
 | `src/mcp_probe.py` | 185 | 模拟 MCP 宿主做真握手(零成本验证) |
-| `src/check_docs.py` | 104 | 文档与仓库一致性闸门(文件引用/行数/产物条数) |
+| `src/usage_log.py` | 110 | **逐调用 usage / 耗时明细落盘**(`NI43_USAGE_LOG` 开关;未设置时为空操作, CLI 行为不变) |
+| `src/check_docs.py` | 139 | 文档与仓库一致性闸门(文件引用/行数/产物条数) |
+
+### 4.2b 平台壳 `app/`(3 个) —— 只读产物, 不重写 `src/` 的逻辑
+
+| 文件 | 行数 | 作用 |
+|---|---|---|
+| `app/report.py` | — | 生成一页**自包含**的可视化报告 `output/report.html`(机制/逐页/结果/审计/abstain/对账/成本/自检) |
+| `app/regress.py` | 162 | **一键回归**:跑自检 → 出报告 → 写 `output/regress.json`;`--run` 才真实重跑管线 |
+| `app/__init__.py` | 14 | 包引导与路径常量 |
+
+> `app/report.py` 与 `src/check_docs.py` 的行数不写死在这里(它们自己也生成/校验文档, 写了会自相矛盾)。
+> FastAPI 服务入口属于平台化阶段, 当前尚未实现 —— 本阶段只做静态报告页与一键回归。
 
 ### 4.3 数据与产物
 
@@ -153,6 +168,10 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | `data/processed/pipeline.detail.jsonl` | 可交付明细 84 条 |
 | `data/processed/abstain.jsonl` | 弃权页(干净数据下为空;有内容时含 `abstain/mark_for_human/last_score`) |
 | `data/processed/eval_report.json` | 最近一次评分协议报告(含 `protocol` 块) |
+| `output/report.html` | **可视化运行报告**(自包含单页;`app/report.py` 生成, 生成过程不调用模型) |
+| `output/regress.json` | 一键回归的机器可读结果(各子检查 exit code / 耗时 / 是否恢复产物) |
+| `output/usage.jsonl` | **逐次 LLM 调用明细**(agent/页/耗时/tokens);真实运行时由 `NI43_USAGE_LOG` 打开 |
+| `output/_regress_eval.json` | 回归期间的对账结果(避免覆盖权威 `eval_report.json`) |
 | `data/processed/replay_ab.json` | 进化规则 A/B 结果 |
 | `data/evolution.jsonl` | 失败/返工/弃权/演习/对账轨迹(**append-only**) |
 | `data/evolved_rules.txt` / `data/evolved_critic_rules.txt` | 炼化出的两端规则 |
@@ -184,7 +203,7 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 |---|---|
 | 密钥不入库 | 只从环境变量读;支持项目根 `.env`(`report_config.api_key`, 缺 `.env` 依赖时给出可执行提示) |
 | 失败可恢复 | 每次模型调用 try/except + 重试(3 次尝试), 仍失败则记录 `pipeline_error` 并降级;子进程失败会打印可手工重跑的完整命令 |
-| 可观测 | **每次调用打印耗时与 token**, 收尾打印汇总;每步命令打印 exit code 与耗时 |
+| 可观测 | **每次调用打印耗时与 token**, 收尾打印汇总;`NI43_USAGE_LOG` 打开后逐调用落盘(`output/usage.jsonl`), 报告页按环节/按页/按任务三级汇总;每步命令打印 exit code 与耗时 |
 | Windows 编码 | `report_config.setup_stdio()` 统一 UTF-8, 避免 GBK 控制台 UnicodeEncodeError |
 | 协议纯净 | MCP 走 stdio, 子进程 stdout 重定向到日志文件(`data/processed/last_mcp_run.log`), 绝不污染协议报文 |
 | 配置与代码分离 | 商品/单位/守恒/关键词/few-shot 全在 `data/pdfs/<报告名>.config.json`;代码里没有商品假设 |
@@ -211,6 +230,9 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 
 | 想验证什么 | 命令 | 期望 |
 |---|---|---|
+| **一键回归 + 可视化报告**(零成本) | `python app/regress.py` | 自检全绿, 产出 `output/report.html`(双击打开) |
+| 一键回归含真实重跑 | `python app/regress.py --run` | 重跑送审页 → 出报告 → 自动恢复产物, `git status` 干净 |
+| 只出报告(已有产物) | `python app/report.py` | 生成 `output/report.html`, 不调用模型 |
 | 题目主入口(全链路) | `python pipeline/revise_loop.py --pdf data/pdfs/barrick.pdf --gt data/ground_truth/barrick_p192_gt.json` | 5 步全绿 + `output/results.json` |
 | 只算计划不花钱 | 同上加 `--dry-run` | 打印步骤与预计调用量, 不调用 API |
 | **评分协议**(字段级 ±5%) | `python src/evaluate.py data/ground_truth/barrick_p192_gt.json` | 匹配 42/42, **252/252 = 100%** |
@@ -241,6 +263,7 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 pip install -r requirements.txt            # 必需依赖
 pip install -r requirements-optional.txt   # 可选(.env / 进度条)
 
+python app/regress.py                                                     # 零成本: 一键回归 + 出可视化报告
 python src/check_docs.py                                                  # 零成本: 文档一致性
 python src/selftest_guards.py                                             # 零成本: 回归
 python pipeline/revise_loop.py --pdf data/pdfs/barrick.pdf --dry-run       # 零成本: 看计划

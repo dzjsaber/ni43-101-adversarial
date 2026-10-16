@@ -1,0 +1,31 @@
+{
+  "generated_at": "2026-10-17 03:29:46",
+  "mode": "zero-cost",
+  "pages": "data\\processed\\barrick.pages.jsonl",
+  "report": "output\\report.html",
+  "checks": [
+    {
+      "cmd": "python src/check_docs.py",
+      "returncode": 0,
+      "seconds": 0.6,
+      "stderr": "",
+      "pass": true
+    },
+    {
+      "cmd": "python src/selftest_guards.py",
+      "returncode": 0,
+      "seconds": 1.8,
+      "stderr": "",
+      "pass": true
+    },
+    {
+      "cmd": "python src/evaluate.py data/ground_truth/barrick_p192_gt.json --out output/_regress_eval.json",
+      "returncode": 0,
+      "seconds": 0.8,
+      "stderr": "",
+      "pass": true
+    }
+  ],
+  "restored": [],
+  "pass": true
+}

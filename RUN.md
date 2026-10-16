@@ -50,6 +50,12 @@ src/spec_export.py     导出题目交付结构 output/results.json(indicated/in
 src/mineral_mcp.py     MCP 工具层: 费用护栏(无 confirm 拒绝) + 路径白名单 + 10 个工具(stdio, 零依赖)
 src/mcp_probe.py       模拟 MCP 宿主做真握手, 验证 10 个工具与护栏(零成本)
 src/check_docs.py      文档与仓库一致性校验(零成本): 文件引用/行数/条数防止漂移
+src/usage_log.py       逐调用 usage/耗时明细(环境变量 NI43_USAGE_LOG 开关; 不开则空操作)
+
+# ---- 平台壳(只读产物, 不重写上面的逻辑) ----
+app/report.py          生成一页自包含的可视化报告 output/report.html(不调用模型)
+app/regress.py         一键回归: 自检 -> 报告 -> output/regress.json; --run 才真实重跑
+app/__init__.py        包引导与路径常量
 data/pdfs/barrick.pdf                        输入报告(当前只有这一份, 338 页)
 data/pdfs/barrick.config.json                该报告的商品/单位/守恒/关键词配置(Au g/t Moz)
 data/processed/barrick.pages.jsonl              定位出的 124 个候选页
@@ -92,6 +98,31 @@ python src/run_all.py data/pdfs/<报告名>.pdf [gt.json]    # 一份报告一�
 python pipeline/evolution_log.py --tail 10                 # 失败轨迹
 python src/spec_export.py                                  # 单独导出 output/results.json
 ```
+
+## 3.1 平台壳 `app/`(零成本优先, 不重写 `src/` 的逻辑)
+
+```powershell
+python app/regress.py                     # 一键回归: 跑自检 -> 出报告(不调用任何模型)
+python app/regress.py --run               # 加上真实重跑送审页(要 2 个 key), 结束后自动恢复产物
+python app/regress.py --run --no-restore  # 真实重跑并保留产物改写(想留一份新结果时用)
+python app/report.py                      # 只用现有产物出报告
+```
+
+产出:
+
+| 文件 | 内容 |
+|---|---|
+| `output/report.html` | **可视化运行报告**, 自包含单页, 双击即可打开: 机制说明 / 逐页判定 / 结果表 / 审计批注 / abstain 清单 / GT 逐字段对账 / 成本与延迟 / 仓库一致性自检 |
+| `output/regress.json` | 机器可读的回归结果(每个子检查的 exit code 与耗时、本次恢复了哪些产物) |
+| `output/usage.jsonl` | **逐次 LLM 调用明细**(agent / 页 / 耗时 / tokens)。真实运行时自动打开;手工开法:`$env:NI43_USAGE_LOG = "output/usage.jsonl"` |
+
+设计取舍(为什么是静态页而不是 Web 服务):
+
+1. "对抗 + 确定性终审"这件事一页纸就能讲清, 不需要常驻服务; 静态页可离线打开、可截图、可随仓库分发。
+2. 报告的每个数字都来自仓库产物文件, 页面末尾自带一致性断言 —— 数据改了但报告没重生成会立刻显形。
+3. `--run` 结束后默认把产物 `git restore` 回仓库原状, 于是"重跑过"不会污染可复现的交付状态;
+   回归前你自己改过的文件不会被它覆盖(只恢复"本次回归引入的改动")。
+4. 逐调用明细用环境变量开关控制: 不设置时 `call_llm` / `call_glm` 行为与输出与之前完全一致。
 
 ## 4. 结果摘要(Barrick Carlin Complex, 2024 技术报告)
 

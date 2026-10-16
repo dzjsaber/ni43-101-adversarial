@@ -226,8 +226,61 @@ def unit_pass(expected, got) -> bool:
     return (e, g) in {("%", "wt%"), ("wt%", "%")}
 
 
+def diff_pairs(gt_rows, pred_rows, cfg):
+    """
+    逐记录对账, 返回可直接渲染的明细(供 evaluate.main 与报告页共用, 避免两套匹配逻辑漂移)。
+    每个元素: {gt, pred, matched, fields:{field:{gt,pred,pass}}, all_pass}
+    """
+    m, used_p = match(gt_rows, pred_rows)
+    details = []
+    for gi, g in enumerate(gt_rows):
+        det = {"gt": f"{g['deposit']} [{g['category']}]", "matched": gi in m,
+               "fields": {}, "all_pass": False}
+        if gi in m:
+            p = pred_rows[m[gi]]
+            det["pred"] = f"{p['deposit']} [{p['category']}] p{p['page']}"
+            ok_all = True
+            checks = {"category": (g["category"] is not None, g["category"] == p["category"]),
+                      "tonnes": (g["tonnes"] is not None, field_pass(g["tonnes"], p["tonnes"])),
+                      "grade": (g["grade"] is not None, field_pass(g["grade"], p["grade"])),
+                      "contained": (g["contained"] is not None, field_pass(g["contained"], p["contained"])),
+                      "unit": (bool(g["grade_unit"] or g["metal_unit"] or cfg["grade_unit"]),
+                               bool(unit_pass(g["grade_unit"] or cfg["grade_unit"], p["grade_unit"]) and
+                                    unit_pass(g["metal_unit"] or cfg["metal_unit"], p["metal_unit"]))),
+                      "basis": (g["basis"] is not None, basis_pass(g["basis"], p["basis"]))}
+            for name, (scored, ok) in checks.items():
+                if not scored:
+                    continue
+                ok_all = ok_all and bool(ok)
+                det["fields"][name] = {"gt": g.get(name), "pred": p.get(name), "pass": bool(ok)}
+            det["all_pass"] = ok_all
+        details.append(det)
+    return details, m, used_p
+
+
+def as_pred_rows(pred, cfg):
+    """把管线产物(新旧字段名都行)转成对账用的内部行。"""
+    return [{"deposit": r.get("deposit", ""), "category": norm_cat(r.get("category")),
+             "page": r.get("source_page"), "basis": r.get("basis"),
+             "tonnes": r.get("tonnes_mt"), "grade": r.get("grade", r.get("grade_gpt")),
+             "contained": r.get("metal", r.get("contained_moz")),
+             "grade_unit": r.get("grade_unit") or cfg["grade_unit"],
+             "metal_unit": r.get("metal_unit") or cfg["metal_unit"]} for r in pred]
+
+
 def main():
     report_config.setup_stdio()
+    # --out <path>: 把报告写到指定文件, 供回归/平台调用 —— 不覆盖 git 跟踪的
+    # data/processed/eval_report.json, 也不往 evolution.jsonl 追加轨迹。
+    out_override, rest = None, []
+    argv, k = sys.argv[1:], 0
+    while k < len(argv):
+        if argv[k] == "--out" and k + 1 < len(argv):
+            out_override, k = Path(argv[k + 1]), k + 2
+            continue
+        rest.append(argv[k])
+        k += 1
+    sys.argv = [sys.argv[0]] + rest
     args = [a for a in sys.argv[1:] if a != "--demo"]
     demo = "--demo" in sys.argv
     pred_path = Path(args[1]) if len(args) > 1 else ROOT / "data" / "processed" / "pipeline.records.jsonl"
@@ -250,41 +303,15 @@ def main():
     gt_rows, n_skip, _ = build_gt_rows(gt_raw)
     # 兼容两代字段名: 新产物用 grade/metal, 旧产物用 grade_gpt/contained_moz
     cfg = report_config.load(pred_path)
-    pred_rows = [{"deposit": r.get("deposit", ""), "category": norm_cat(r.get("category")),
-                  "page": r.get("source_page"), "basis": r.get("basis"),
-                  "tonnes": r.get("tonnes_mt"), "grade": r.get("grade", r.get("grade_gpt")),
-                  "contained": r.get("metal", r.get("contained_moz")),
-                  "grade_unit": r.get("grade_unit") or cfg["grade_unit"],
-                  "metal_unit": r.get("metal_unit") or cfg["metal_unit"]} for r in pred]
+    pred_rows = as_pred_rows(pred, cfg)
 
-    m, used_p = match(gt_rows, pred_rows)
+    details, m, used_p = diff_pairs(gt_rows, pred_rows, cfg)
     fields = {k: [0, 0] for k in ("category", "tonnes", "grade", "contained", "unit", "basis")}
-    details, perfect = [], 0
-    for gi, g in enumerate(gt_rows):
-        det = {"gt": f"{g['deposit']} [{g['category']}]", "matched": gi in m, "fields": {}}
-        if gi in m:
-            p = pred_rows[m[gi]]
-            det["pred"] = f"{p['deposit']} [{p['category']}] p{p['page']}"
-            ok_all = True
-            checks = {"category": (g["category"] is not None, g["category"] == p["category"]),
-                      "tonnes": (g["tonnes"] is not None, field_pass(g["tonnes"], p["tonnes"])),
-                      "grade": (g["grade"] is not None, field_pass(g["grade"], p["grade"])),
-                      "contained": (g["contained"] is not None, field_pass(g["contained"], p["contained"])),
-                      "unit": (bool(g["grade_unit"] or g["metal_unit"] or cfg["grade_unit"]),
-                               bool(unit_pass(g["grade_unit"] or cfg["grade_unit"],
-                                              p["grade_unit"]) and
-                                    unit_pass(g["metal_unit"] or cfg["metal_unit"],
-                                              p["metal_unit"]))),
-                      "basis": (g["basis"] is not None, basis_pass(g["basis"], p["basis"]))}
-            for name, (scored, ok) in checks.items():
-                if not scored:
-                    continue
-                fields[name][0] += 1
-                fields[name][1] += 1 if ok else 0
-                ok_all = ok_all and bool(ok)
-                det["fields"][name] = {"gt": g.get(name), "pred": p.get(name), "pass": bool(ok)}
-            perfect += 1 if ok_all else 0
-        details.append(det)
+    for det in details:
+        for name, cell in det["fields"].items():
+            fields[name][0] += 1
+            fields[name][1] += 1 if cell["pass"] else 0
+    perfect = sum(1 for d in details if d["all_pass"])
 
     tot = sum(v[0] for v in fields.values())
     cor = sum(v[1] for v in fields.values())
@@ -320,15 +347,17 @@ def main():
                           "perfect_records": perfect, "skipped_aggregates": n_skip,
                           "per_field": {k: {"scored": v[0], "correct": v[1]} for k, v in fields.items() if v[0]}},
               "unmatched_gt": miss, "extra_pred": extras, "details": details}
-    out = ROOT / "data" / "processed" / "eval_report.json"
+    out = out_override or (ROOT / "data" / "processed" / "eval_report.json")
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"报告 -> {out}")
 
-    ev = {"ts": time.strftime("%Y-%m-%d %H:%M:%S"), "page": "all",
-          "kind": "gt_eval", "detail": report["summary"],
-          "lesson": "" if demo else f"GT对账 字段级准确率 {cor}/{tot}"}
-    with (ROOT / "data" / "evolution.jsonl").open("a", encoding="utf-8") as f:
-        f.write(json.dumps(ev, ensure_ascii=False) + "\n")
+    if out_override is None:            # --out 走"无副作用"模式, 不写权威进化日志
+        ev = {"ts": time.strftime("%Y-%m-%d %H:%M:%S"), "page": "all",
+              "kind": "gt_eval", "detail": report["summary"],
+              "lesson": "" if demo else f"GT对账 字段级准确率 {cor}/{tot}"}
+        with (ROOT / "data" / "evolution.jsonl").open("a", encoding="utf-8") as f:
+            f.write(json.dumps(ev, ensure_ascii=False) + "\n")
 
 
 if __name__ == "__main__":

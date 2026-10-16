@@ -14,6 +14,7 @@ from pathlib import Path
 import requests
 
 import report_config
+import usage_log
 
 ROOT = Path(__file__).resolve().parents[1]
 API_URL = "https://api.deepseek.com/chat/completions"
@@ -155,6 +156,7 @@ def call_llm(user_text: str, api_key: str) -> str:
                        ("completion_tokens", "completion_tokens"),
                        ("total_tokens", "total_tokens")):
         USAGE[key] += int(u.get(field) or 0)
+    usage_log.record_usage("extractor", MODEL, dt, u)      # 逐调用明细(未设 NI43_USAGE_LOG 时为空操作)
     print(f"    [extractor] {MODEL} 耗时 {dt:.1f}s | tokens: prompt={u.get('prompt_tokens', '?')} "
           f"completion={u.get('completion_tokens', '?')} total={u.get('total_tokens', '?')}")
     return data["choices"][0]["message"]["content"]
@@ -205,11 +207,13 @@ def main(jsonl_path: Path):
 
     out_path = ROOT / "data" / "processed" / "extracted.jsonl"
     total = 0
+    usage_log.truncate()
     with out_path.open("w", encoding="utf-8") as f:
         for k, p in enumerate(todo, 1):
             recs = None
             for attempt in range(1, RETRIES + 1):
                 try:
+                    usage_log.set_page(p["page"])
                     raw = call_llm("\n".join(p["text_lines"]), api_key)
                     recs = parse_records(raw)
                     break

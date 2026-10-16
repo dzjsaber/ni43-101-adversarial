@@ -16,6 +16,7 @@ import critic
 import extractor
 import guards
 import report_config
+import usage_log
 
 ROOT = Path(__file__).resolve().parents[1]
 _CFG = dict(report_config.DEFAULT)          # 由 use_config() 按报告覆盖(商品/单位/守恒因子)
@@ -106,6 +107,7 @@ def log_evol(entry):
 def run_page(page, ds_key, zp_key):
     page_text = "\n".join(page["text_lines"])
     pg = page["page"]
+    usage_log.set_page(pg)                       # 后续 LLM 调用都归属到本页
     recs = extract_once(ds_key, page_text)
     rounds = 0
     last_issues = []
@@ -164,6 +166,7 @@ def main(pages_path):
     zp_key = report_config.api_key("ZHIPU_API_KEY")
     extractor.reset_usage()
     critic.reset_usage()
+    usage_log.truncate()                          # 一次真实运行只留一份调用明细
     t_start = time.time()
 
     pages = [json.loads(l) for l in pages_path.read_text(encoding="utf-8").splitlines() if l.strip()]

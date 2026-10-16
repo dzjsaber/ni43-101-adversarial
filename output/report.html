@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NI 43-101 对抗式抽取 · 运行报告</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1c1f23;--muted:#6b7280;--line:#e3e6ea;
+--ok:#0f7b4f;--warn:#9a6700;--bad:#b42318;--accent:#1f4e79}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.65 -apple-system,"Segoe UI","Microsoft YaHei",Roboto,sans-serif}
+header{background:linear-gradient(135deg,#1f4e79,#2f6fa8);color:#fff;padding:26px 32px}
+header h1{margin:0 0 6px;font-size:23px}
+header .sub{opacity:.92;font-size:13.5px}
+header .meta{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px 26px;font-size:13px;opacity:.95}
+main{max-width:1280px;margin:0 auto;padding:22px 20px 60px}
+section{background:var(--card);border:1px solid var(--line);border-radius:10px;
+padding:20px 22px;margin:18px 0;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+section h2{margin:0 0 10px;font-size:17.5px;color:var(--accent)}
+section h3{margin:16px 0 8px;font-size:15px}
+.lead{color:#374151;margin:0 0 12px}
+.note{color:var(--muted);font-size:13px;margin:10px 0 0}
+.muted{color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px;display:block;overflow-x:auto}
+th,td{border-bottom:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f0f3f7;font-weight:600}
+table.narrow{max-width:860px;display:table}
+table.compact td,table.compact th{padding:5px 7px;font-size:13px}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.mono{font-family:Consolas,"Courier New",monospace;font-size:12.5px;white-space:pre-wrap}
+.null{color:var(--bad);background:#fdecea;border-radius:3px;padding:0 5px;font-size:12px}
+tr.anomaly{background:#fff8f7}
+tr.okrow{background:#f4fbf7}
+tr.badrow{background:#fdf3f2}
+.ok{color:var(--ok);font-weight:600}
+.bad{color:var(--bad);font-weight:600}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px;margin:12px 0}
+.step{border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:#fcfdfe}
+.steptitle{font-weight:600;margin-bottom:6px}
+.stepbody{color:#374151;font-size:13.5px}
+.src{margin-top:8px;color:var(--muted);font-size:12px;font-family:Consolas,monospace}
+.kv{display:flex;flex-wrap:wrap;gap:8px 26px;margin:10px 0 4px;font-size:13.5px}
+.kv span{color:var(--muted);margin-right:8px}
+.bar{height:10px;background:#eaeef3;border-radius:6px;overflow:hidden;margin:10px 0 4px;max-width:520px}
+.fill{height:100%}
+.fill.ok{background:var(--ok)}.fill.warn{background:var(--warn)}.fill.bad{background:var(--bad)}
+.barlabel{font-size:13px;color:var(--muted)}
+summary{cursor:pointer;color:var(--accent);font-size:13px}
+pre{background:#f7f9fb;border:1px solid var(--line);border-radius:6px;padding:10px;
+overflow:auto;max-height:240px;font-size:12px;margin:8px 0}
+.issues ul{margin:6px 0 0 18px}
+.drills{margin:8px 0 0 18px}
+.gtblock{border-top:1px dashed var(--line);padding-top:14px;margin-top:14px}
+footer{max-width:1280px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:12.5px}
+</style></head>
+<body>
+<header>
+  <h1>NI 43-101 对抗式资源量抽取 · 运行报告</h1>
+  <div class="sub">DeepSeek 抽取 + GLM 审计 + 确定性代码终审 —— 放行权不交给任何模型</div>
+  <div class="meta">
+    <div>生成时间 <b>2026-10-17 03:29:46</b></div>
+    <div>报告 <b>barrick.pdf</b></div>
+    <div>数据源 <b>data/processed/*.jsonl + output/*.json</b></div>
+  </div>
+  <div class="meta"><div>候选页 / 送审页 <b>124 / 12</b></div><div>本次已跑 / 有判定 <b>12 / 4</b></div><div>交付记录 / 明细 <b>98 / 84</b></div><div>弃权页 <b>0</b></div><div>LLM 调用 / tokens <b>26 / 63,140</b></div><div>单位口径 <b>Au g/t → Moz</b></div></div>
+</header>
+<main>
+<section>
+  <h2>机制: 放行权在代码手里, 不在模型手里</h2>
+  <p class="lead">两个不同厂商的模型互相牵制, 但能不能放行由确定性代码判定。
+     本页所有数字都来自仓库产物, 未重跑任何模型。</p>
+  <div class="steps"><div class="step"><div class="steptitle">① 定位候选资源表页</div><div class="stepbody">pdfplumber 逐页抽文本并做关键词加权打分, 另有表格的页无条件保留。本次 124 页进入候选池, 其中打分 ≥10 的 12 页具备送审资格。</div><div class="src">src/preprocess.py</div></div><div class="step"><div class="steptitle">② 抽取(DeepSeek)</div><div class="stepbody">prompt 按报告配置渲染(商品/单位/守恒式), few-shot 用真实表格行; 页码由代码盖戳, 不采信模型自报。本次产出 98 条交付记录。</div><div class="src">src/extractor.py</div></div><div class="step"><div class="steptitle">③ 确定性守恒闸</div><div class="stepbody">metal = tonnes × grade × factor 逐条复算, 与原文抄录值比对, 容差 ±10%; 越界即打回返工。这一道不依赖任何模型。</div><div class="src">src/pipeline.py: conservation_issues</div></div><div class="step"><div class="steptitle">④ 结构闸</div><div class="stepbody">聚合行(Total)/三元组残缺/列组缺失/M&I 与 Measured+Indicated 不自洽 —— 这几类错误守恒闸完全静默, 由确定性规则单独拦。</div><div class="src">src/guards.py: structural_issues</div></div><div class="step"><div class="steptitle">⑤ 审计(GLM)</div><div class="stepbody">另一个厂商的模型对同一页挑刺并打 1–10 分; 它只出建议, 不掌握放行权。本次审计 12 页。</div><div class="src">src/critic.py</div></div><div class="step"><div class="steptitle">⑥ 指控机械核验</div><div class="stepbody">critic 的每条指控都要在页面原文里找到逐字佐证, 找不到即被代码驳回; 指控对象不在本次结果里的, 视为陈旧指控同样驳回。</div><div class="src">src/guards.py: filter_claims</div></div><div class="step"><div class="steptitle">⑦ ≤3 轮返工 / 弃权</div><div class="stepbody">不达标就带着具体指控重抽, 最多 3 轮; 轮次用尽或重抽仍无变化即 abstain 并标记待人工 —— 宁可弃权, 不硬给。</div><div class="src">src/pipeline.py</div></div><div class="step"><div class="steptitle">⑧ 交付前终审</div><div class="stepbody">聚合行剔除、摘要组行单列、跨页重复留痕; 明细记录带 source_page 溯源。</div><div class="src">src/guards.py: split_deliverable</div></div></div>
+  <div class="kv">
+    <div><span>本次判定</span><b>ACCEPT 4 页 (共 4 页)</b></div>
+    <div><span>返工轮次</span><b>0 轮 3 页 / 1 轮 1 页</b></div>
+  </div>
+  <div class="kv"><div><span>报告配置</span><b>Au | grade g/t | metal Moz | 守恒 factor=0.0321507 | 容差 ±10% | 来源 barrick.config.json</b></div></div>
+</section>
+<section>
+  <h2>逐页进度与判定</h2>
+  <p class="lead">送审资格 12 页: 本次已抽取消 + 审计 12 页(其中进对抗主循环、有判定结论的 4 页);未跑 0 页。未跑页不花钱、也没有判定结论。</p>
+  <table>
+    <thead><tr><th>页</th><th>定位分</th><th>判定</th><th>轮次</th><th>审计分</th>
+      <th>记录</th><th>调用</th><th>耗时 s</th><th>tokens</th><th>原文 / 指控</th></tr></thead>
+    <tbody><tr><td class='num'>191</td><td class='num'>21</td><td>ACCEPT</td><td class='num'>0</td><td class='num'>10</td><td class='num'>42</td><td class='num'>2</td><td class='num'>14.69</td><td class='num'>10086</td><td><details><summary>原文摘录 / 指控</summary><pre>NI 43-101 Technical Report on the Carlin Complex
+Table 14-21 Carlin Mineral Resource Statement, 100% Basis, December 31, 2024
+Measured Indicated Measured + Indicated Inferred
+Location Tonnes Grade Contained Tonnes Grade Contained Tonnes Grade Contained Tonnes Grade Contained
+(Mt) (g/t Au) (Moz Au) (Mt) (g/t Au) (Moz Au) (Mt) (g/t Au) (Moz Au) (Mt) (g/t Au) (Moz Au)
+Surface
+Gold Quarry - - - 89 1.99 5.7 89 1.99 5.7 36 1.2 1.4
+Goldstar - - - 5.1 2.05 0.34 5.1 2.05 0.34 1.6 1.6 0.083
+Goldstrike - - - 6.1 2.65 0.52 6.1 2.65 0.52 0.47 1.7 0.025
+Green Lantern - - - 13 1.31 0.54 13 1.31 0.54 1.9 1.0 0.058
+South Arturo OP - - - 11 2.41 0.82 11 2.41 0.82 1.8 2.8 0.17
+Open Pit Total - - - 120 1.99 7.9 120 1.99 7.9 42 1.2 1.7
+Carlin Stockpiles 14 1.29 0.59 32 2.34 2.4 47 2.02 3 4.5 1.9 0.27
+Surface Total 14 1.29 0.59 160 2.06 10 170 2.00 11 47 1.3 2.0</pre></details></td></tr><tr><td class='num'>192</td><td class='num'>21</td><td>ACCEPT</td><td class='num'>0</td><td class='num'>10</td><td class='num'>42</td><td class='num'>2</td><td class='num'>13.28</td><td class='num'>10468</td><td><details><summary>原文摘录 / 指控</summary><pre>NI 43-101 Technical Report on the Carlin Complex
+Table 14-22 Carlin Mineral Resource Statement, Barrick Attributable Basis, December 31, 2024
+Measured Indicated Measured + Indicated Inferred
+Location Tonnes Grade Contained Tonnes Grade Contained Tonnes Grade Contained Tonnes Grade Contained
+(Mt) (g/t Au) (Moz Au) (Mt) (g/t Au) (Moz Au) (Mt) (g/t Au) (Moz Au) (Mt) (g/t Au) (Moz Au)
+Surface
+Gold Quarry - - - 55 1.99 3.5 55 1.99 3.5 22 1.2 0.86
+Goldstar - - - 3.1 2.05 0.21 3.1 2.05 0.21 0.98 1.6 0.051
+Goldstrike - - - 3.8 2.65 0.32 3.8 2.65 0.32 0.29 1.7 0.015
+Green Lantern - - - 8.0 1.31 0.33 8.0 1.31 0.33 1.2 1.0 0.036
+South Arturo OP - - - 6.8 2.41 0.5 6.8 2.41 0.5 1.1 2.8 0.10
+Open Pit Attrib. - - - 74 1.99 4.9 74 1.99 4.9 26 1.2 1.0
+Carlin Stockpiles
+8.6 1.29 0.36 20 2.34 1.5 29 2.02 1.8 2.8 1.9 0.17</pre></details></td></tr><tr><td class='num'>17</td><td class='num'>18</td><td>ACCEPT</td><td class='num'>0</td><td class='num'>10</td><td class='num'>7</td><td class='num'>2</td><td class='num'>7.06</td><td class='num'>4402</td><td><details><summary>原文摘录 / 指控</summary><pre>NI 43-101 Technical Report on the Carlin Complex
+Table 1-1 Carlin Complex Mineral Resources Summary, 100% Basis, as of December 31, 2024
+Measured Indicated Measured + Indicated Inferred
+Location Tonnes Grade Contained Tonnes Grade Contained Tonnes Grade Contained Tonnes Grade Contained
+(Mt) (g/t Au) (Moz Au) (Mt) (g/t Au) (Moz Au) (Mt) (g/t Au) (Moz Au) (Mt) (g/t Au) (Moz Au)
+Open Pits - - - 120 1.99 7.9 120 1.99 7.9 42 1.2 1.7
+Carlin
+14 1.29 0.59 32 2.34 2.4 47 2.02 3 4.5 1.9 0.27
+Stockpiles
+Surface Total 14 1.29 0.59 160 2.06 10 170 2.00 11 47 1.3 2.0
+Underground
+0.14 8.55 0.038 54 7.92 14 55 7.93 14 31 7.3 7.3
+Total
+Carlin Complex</pre></details></td></tr><tr><td class='num'>154</td><td class='num'>18</td><td>ACCEPT</td><td class='num'>1</td><td class='num'>10</td><td class='num'>7</td><td class='num'>4</td><td class='num'>14.23</td><td class='num'>10163</td><td><details><summary>原文摘录 / 指控</summary><pre>NI 43-101 Technical Report on the Carlin Complex
+Table 14-1 Carlin Complex Mineral Resources Summary, 100% Basis, as of December 31, 2024
+Measured Indicated Measured + Indicated Inferred
+Location Tonnes Grade Contained Tonnes Grade Contained Tonnes Grade Contained Tonnes Grade Contained
+(Mt) (g/t Au) (Moz Au) (Mt) (g/t Au) (Moz Au) (Mt) (g/t Au) (Moz Au) (Mt) (g/t Au) (Moz Au)
+Open Pits - - - 120 1.99 7.9 120 1.99 7.9 42 1.2 1.7
+Carlin
+14 1.29 0.59 32 2.34 2.4 47 2.02 3 4.5 1.9 0.27
+Stockpiles
+Surface Total 14 1.29 0.59 160 2.06 10 170 2.00 11 47 1.3 2.0
+Underground
+0.14 8.55 0.038 54 7.92 14 55 7.93 14 31 7.3 7.3
+Total
+Carlin Total 14 1.36 0.63 210 3.57 24 230 3.43 25 78 3.7 9.3</pre></details></td></tr><tr><td class='num'>188</td><td class='num'>14</td><td>未运行</td><td class='num'><span class="null">null</span></td><td class='num'>10</td><td class='num'>0</td><td class='num'>2</td><td class='num'>4.91</td><td class='num'>3582</td><td><details><summary>原文摘录 / 指控</summary><pre>NI 43-101 Technical Report on the Carlin Complex
+Stockpiles
+Carlin Complex maintains stockpiles of various material types that are evaluated for inclusion as
+Mineral Resources. These stockpiles comprise material mined historically that has not yet been
+processed for various reasons, including economic and geometallurgical constraints within LOM
+plans. All of the available stockpiles are considered for inclusion as Measured, Indicated, or Inferred
+Resources. Tonnage and grade of each stockpile is estimated based on tracking of material
+movements on and off. Adjustments to tonnes and grades are made on the basis of stockpile surveys
+and periodic drilling programs evaluating gold content and geometallurgical characteristics.
+For the stockpiles, a net value-based approach was used to analyze each stockpile which took into
+consideration the grade, ounces, total carbonaceous material content (and the resulting metallurgical
+recovery), the processing costs including rehandle (to the required processing facility), refining costs,
+and the AB 495 Nevada tax.
+Using a gold price of $1,900/oz the potential revenue that could be generated from the stockpile was</pre></details></td></tr><tr><td class='num'>190</td><td class='num'>14</td><td>未运行</td><td class='num'><span class="null">null</span></td><td class='num'>10</td><td class='num'>0</td><td class='num'>2</td><td class='num'>5.03</td><td class='num'>2870</td><td><details><summary>原文摘录 / 指控</summary><pre>NI 43-101 Technical Report on the Carlin Complex
+Rita K;
+o
+Exodus;
+o
+Pete Bajo;
+o
+Ren;
+o
+South Arturo UG; and
+o
+Stockpiles (Gold Quarry, Goldstar, Goldstrike, and South Arturo)
+o
+• Measured and Indicated categories: 230 Mt at an average grade of 3.43 g/t Au for 25 Moz;</pre></details></td></tr><tr><td class='num'>219</td><td class='num'>12</td><td>未运行</td><td class='num'><span class="null">null</span></td><td class='num'>10</td><td class='num'>0</td><td class='num'>2</td><td class='num'>6.27</td><td class='num'>3599</td><td><details><summary>原文摘录 / 指控</summary><pre>NI 43-101 Technical Report on the Carlin Complex
+Figure 15-15 and Figure 15-16 show the Goldstrike Autoclave monthly comparison between GC call
+and Plant check out.
+450,000
+400,000
+350,000
+300,000
+250,000
+200,000
+150,000
+100,000
+50,000
+0
+Figure 15-15 Goldstrike Autoclave Monthly Tonnage Comparison</pre></details></td></tr><tr><td class='num'>189</td><td class='num'>11</td><td>未运行</td><td class='num'><span class="null">null</span></td><td class='num'>10</td><td class='num'>0</td><td class='num'>2</td><td class='num'>5.64</td><td class='num'>3374</td><td><details><summary>原文摘录 / 指控</summary><pre>NI 43-101 Technical Report on the Carlin Complex
+Table 14-20 Carlin Complex Mineral Resources Cut-off Grades
+Deposit Non-Refractory Cutoff Grades (g/t) Refractory Cutoff Grades (g/t)
+Open Pit
+Gold Quarry 0.27 0.80
+Goldstar 0.25 0.79
+Goldstrike - 0.78
+Green Lantern 0.21 0.79
+South Arturo OP 0.36 0.79
+Underground
+South Arturo UG - 5.14 – 5.29
+Exodus - 3.13 – 4.04
+Fallon - 4.17 – 5.04
+Goldstrike - 5.92 – 6.88</pre></details></td></tr><tr><td class='num'>216</td><td class='num'>11</td><td>未运行</td><td class='num'><span class="null">null</span></td><td class='num'>10</td><td class='num'>0</td><td class='num'>2</td><td class='num'>7.17</td><td class='num'>3502</td><td><details><summary>原文摘录 / 指控</summary><pre>NI 43-101 Technical Report on the Carlin Complex
+The QPs consider that these sensitivities are representative of the expected changes in Mineral
+Reserves that would be seen with changes in the Reserve gold price.
+Reconciliation
+Barrick has a standard weekly, end-of-month (EoM), and end-of-quarter (EoQ) production
+measurement system that reports and provides reconciliation between Mineral Resource model,
+grade control and the monthly mine production.
+Carlin tracks weekly, monthly, quarterly, and year-to-date production GC results versus the plant.
+Daily tracking is also conducted but at lower resolution due to material movements. Weekly reporting
+is done at a higher resolution, but end of month is the accepted timeframe for official reporting.
+Information is summarized for weekly, monthly, and quarterly reporting intervals.
+Table 15-13 to Table 15-15 and Figure 15-11 to Figure 15-16 outline the reconciliation for the process
+plants at Carlin. This includes all Carlin sources as well as third party ores from Cortez and
+concentrates from Golden Sunlight and Phoenix. Due to the comingling of ore prior to processing, it</pre></details></td></tr><tr><td class='num'>36</td><td class='num'>10</td><td>未运行</td><td class='num'><span class="null">null</span></td><td class='num'>10</td><td class='num'>0</td><td class='num'>2</td><td class='num'>4.79</td><td class='num'>3247</td><td><details><summary>原文摘录 / 指控</summary><pre>NI 43-101 Technical Report on the Carlin Complex
+Table 2-3 Table of Abbreviations
+Unit Measure Unit Measure
+$ United States dollar m metre
+° degree m2 square metre
+°C degree Celsius m3 cubic metre
+µg microgram m3/hr cubic metres per hour
+µm micrometre m3/s cubic metres per second
+AMSL above mean sea level Ma million years
+ANFO ammonium nitrate fuel oil min minute
+Au gold ML million litres
+CFM cubic feet per minute mm millimetre
+CIL carbon-in-Leach Moz million ounces
+cm centimetre Mt million metric tonnes</pre></details></td></tr><tr><td class='num'>194</td><td class='num'>10</td><td>未运行</td><td class='num'><span class="null">null</span></td><td class='num'>10</td><td class='num'>0</td><td class='num'>2</td><td class='num'>25.81</td><td class='num'>4747</td><td><details><summary>原文摘录 / 指控</summary><pre>NI 43-101 Technical Report on the Carlin Complex
+Table 14-23 2023 vs 2024 Resources Comparison
+M&amp;I Resources Inferred Resources
+Deposit Year / Tonnes Grade Contained Tonnes Grade Contained
+Net Change (kt) (g/t) Au (koz) (kt) (g/t) Au (koz)
+Carlin Complex Open Pit Deposits
+2023 99,423 2.19 7,001 52,068 1.17 1,965
+Gold
+2024 89,362 1.99 5,714 36,211 1.2 1,351
+Quarry
+Net Change -10,060 -0.2 -1,287 -15,858 0.03 -614
+2023 7,372 1.85 437 2,893 1.36 127
+Goldstar 2024 5,093 2.05 335 1,627 1.6 83
+Net Change -2,279 0.2 -102 -1,266 0.24 -43</pre></details></td></tr><tr><td class='num'>200</td><td class='num'>10</td><td>未运行</td><td class='num'><span class="null">null</span></td><td class='num'>10</td><td class='num'>0</td><td class='num'>2</td><td class='num'>12.4</td><td class='num'>3100</td><td><details><summary>原文摘录 / 指控</summary><pre>NI 43-101 Technical Report on the Carlin Complex
+Mineral Reserves Estimation Process
+Open Pit
+The Mineral Reserve estimates use the depleted Resource block models as described in Section
+14. Only Measured and Indicated Mineral Resources inside the final pit design were used in the
+Reserve estimation. The final pit design is developed using the optimization shell as guidance. The
+details of the optimization process are described in Section 15.4.1.
+The general process for estimation of open pit Mineral Reserves is as follows:
+• Review the historical and forecasted LOM planned costs for each mining area to evaluate
+suitable unit costs for all mining, processing, and other activities.
+• Perform pit optimization to develop a series of pit shells using cost, revenue, geotechnical,
+mining recovery and dilution, processing recovery, and other input factors.
+• Select the desired pit shell for basis of detailed ultimate pit design.
+• Material within the ultimate design pit shell was evaluated and classified according to cut-off</pre></details></td></tr></tbody>
+  </table>
+  <p class="note">定位分 = 关键词加权得分(5 分以上进候选池); 审计分满分 10, 通过线 8。</p>
+</section>
+<section>
+  <h2>抽取结果(98 条 / 可交付明细 84 条)</h2>
+  <p class="lead">缺失吨位或金属量的行整行高亮, 这类记录不进交付明细; 交付分类由代码在交付前判定,
+     不删数据只打标。空值单元格共 0 个, 跨页重复标注 11 条,
+     交付分类分布 {&#x27;detail&#x27;: 84, &#x27;summary&#x27;: 14}。</p>
+  <table class="compact"><thead><tr><th>页</th><th>矿点</th><th>类别</th><th>矿石量 Mt</th><th>品位 g/t</th><th>金属量 Moz</th><th>基准</th><th>交付分类</th><th>重复来源页</th></tr></thead>
+    <tbody><tr class=''><td class='num'>191</td><td>Gold Quarry</td><td>Indicated</td><td class='num'>89</td><td class='num'>1.99</td><td class='num'>5.7</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Gold Quarry</td><td>M&amp;I</td><td class='num'>89</td><td class='num'>1.99</td><td class='num'>5.7</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Gold Quarry</td><td>Inferred</td><td class='num'>36</td><td class='num'>1.2</td><td class='num'>1.4</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Goldstar</td><td>Indicated</td><td class='num'>5.1</td><td class='num'>2.05</td><td class='num'>0.34</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Goldstar</td><td>M&amp;I</td><td class='num'>5.1</td><td class='num'>2.05</td><td class='num'>0.34</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Goldstar</td><td>Inferred</td><td class='num'>1.6</td><td class='num'>1.6</td><td class='num'>0.083</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Goldstrike</td><td>Indicated</td><td class='num'>6.1</td><td class='num'>2.65</td><td class='num'>0.52</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Goldstrike</td><td>M&amp;I</td><td class='num'>6.1</td><td class='num'>2.65</td><td class='num'>0.52</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Goldstrike</td><td>Inferred</td><td class='num'>0.47</td><td class='num'>1.7</td><td class='num'>0.025</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Green Lantern</td><td>Indicated</td><td class='num'>13</td><td class='num'>1.31</td><td class='num'>0.54</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Green Lantern</td><td>M&amp;I</td><td class='num'>13</td><td class='num'>1.31</td><td class='num'>0.54</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Green Lantern</td><td>Inferred</td><td class='num'>1.9</td><td class='num'>1.0</td><td class='num'>0.058</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>South Arturo OP</td><td>Indicated</td><td class='num'>11</td><td class='num'>2.41</td><td class='num'>0.82</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>South Arturo OP</td><td>M&amp;I</td><td class='num'>11</td><td class='num'>2.41</td><td class='num'>0.82</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>South Arturo OP</td><td>Inferred</td><td class='num'>1.8</td><td class='num'>2.8</td><td class='num'>0.17</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Carlin Stockpiles</td><td>Measured</td><td class='num'>14</td><td class='num'>1.29</td><td class='num'>0.59</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Carlin Stockpiles</td><td>Indicated</td><td class='num'>32</td><td class='num'>2.34</td><td class='num'>2.4</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Carlin Stockpiles</td><td>M&amp;I</td><td class='num'>47</td><td class='num'>2.02</td><td class='num'>3</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Carlin Stockpiles</td><td>Inferred</td><td class='num'>4.5</td><td class='num'>1.9</td><td class='num'>0.27</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Exodus</td><td>Indicated</td><td class='num'>5.6</td><td class='num'>4.49</td><td class='num'>0.81</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Exodus</td><td>M&amp;I</td><td class='num'>5.6</td><td class='num'>4.49</td><td class='num'>0.81</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Exodus</td><td>Inferred</td><td class='num'>0.46</td><td class='num'>4.1</td><td class='num'>0.06</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Fallon</td><td>Inferred</td><td class='num'>6.6</td><td class='num'>8.2</td><td class='num'>1.8</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Goldstrike</td><td>Indicated</td><td class='num'>12</td><td class='num'>9.99</td><td class='num'>4.0</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Goldstrike</td><td>M&amp;I</td><td class='num'>12</td><td class='num'>9.99</td><td class='num'>4.0</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Goldstrike</td><td>Inferred</td><td class='num'>0.81</td><td class='num'>9.6</td><td class='num'>0.25</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Leeville</td><td>Indicated</td><td class='num'>28</td><td class='num'>7.82</td><td class='num'>7.0</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Leeville</td><td>M&amp;I</td><td class='num'>28</td><td class='num'>7.82</td><td class='num'>7.0</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Leeville</td><td>Inferred</td><td class='num'>8.1</td><td class='num'>7.3</td><td class='num'>1.9</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Pete Bajo</td><td>Indicated</td><td class='num'>3.7</td><td class='num'>7.87</td><td class='num'>0.93</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Pete Bajo</td><td>M&amp;I</td><td class='num'>3.7</td><td class='num'>7.87</td><td class='num'>0.93</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Pete Bajo</td><td>Inferred</td><td class='num'>1.8</td><td class='num'>7.4</td><td class='num'>0.42</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Ren</td><td>Indicated</td><td class='num'>0.15</td><td class='num'>12.56</td><td class='num'>0.062</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Ren</td><td>M&amp;I</td><td class='num'>0.15</td><td class='num'>12.56</td><td class='num'>0.062</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Ren</td><td>Inferred</td><td class='num'>6.9</td><td class='num'>6.9</td><td class='num'>1.5</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Rita K</td><td>Indicated</td><td class='num'>4.4</td><td class='num'>7.01</td><td class='num'>0.99</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Rita K</td><td>M&amp;I</td><td class='num'>4.4</td><td class='num'>7.01</td><td class='num'>0.99</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>Rita K</td><td>Inferred</td><td class='num'>5.6</td><td class='num'>6.6</td><td class='num'>1.2</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>South Arturo UG</td><td>Measured</td><td class='num'>0.14</td><td class='num'>8.55</td><td class='num'>0.038</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>South Arturo UG</td><td>Indicated</td><td class='num'>0.29</td><td class='num'>7.66</td><td class='num'>0.072</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>South Arturo UG</td><td>M&amp;I</td><td class='num'>0.43</td><td class='num'>7.95</td><td class='num'>0.11</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>191</td><td>South Arturo UG</td><td>Inferred</td><td class='num'>0.93</td><td class='num'>7.7</td><td class='num'>0.23</td><td>100% Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>Gold Quarry</td><td>Indicated</td><td class='num'>55</td><td class='num'>1.99</td><td class='num'>3.5</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>Gold Quarry</td><td>M&amp;I</td><td class='num'>55</td><td class='num'>1.99</td><td class='num'>3.5</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>Gold Quarry</td><td>Inferred</td><td class='num'>22</td><td class='num'>1.2</td><td class='num'>0.86</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>Goldstar</td><td>Indicated</td><td class='num'>3.1</td><td class='num'>2.05</td><td class='num'>0.21</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>Goldstar</td><td>M&amp;I</td><td class='num'>3.1</td><td class='num'>2.05</td><td class='num'>0.21</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>Goldstar</td><td>Inferred</td><td class='num'>0.98</td><td class='num'>1.6</td><td class='num'>0.051</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>Goldstrike</td><td>Indicated</td><td class='num'>3.8</td><td class='num'>2.65</td><td class='num'>0.32</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>Goldstrike</td><td>M&amp;I</td><td class='num'>3.8</td><td class='num'>2.65</td><td class='num'>0.32</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>Goldstrike</td><td>Inferred</td><td class='num'>0.29</td><td class='num'>1.7</td><td class='num'>0.015</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>Green Lantern</td><td>Indicated</td><td class='num'>8.0</td><td class='num'>1.31</td><td class='num'>0.33</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>Green Lantern</td><td>M&amp;I</td><td class='num'>8.0</td><td class='num'>1.31</td><td class='num'>0.33</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>Green Lantern</td><td>Inferred</td><td class='num'>1.2</td><td class='num'>1.0</td><td class='num'>0.036</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>South Arturo OP</td><td>Indicated</td><td class='num'>6.8</td><td class='num'>2.41</td><td class='num'>0.5</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>South Arturo OP</td><td>M&amp;I</td><td class='num'>6.8</td><td class='num'>2.41</td><td class='num'>0.5</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>South Arturo OP</td><td>Inferred</td><td class='num'>1.1</td><td class='num'>2.8</td><td class='num'>0.1</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>Carlin Stockpiles Attrib.</td><td>Measured</td><td class='num'>8.6</td><td class='num'>1.29</td><td class='num'>0.36</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>Carlin Stockpiles Attrib.</td><td>Indicated</td><td class='num'>20</td><td class='num'>2.34</td><td class='num'>1.5</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr><tr class=''><td class='num'>192</td><td>Carlin Stockpiles Attrib.</td><td>M&amp;I</td><td class='num'>29</td><td class='num'>2.02</td><td class='num'>1.8</td><td>Barrick Attributable Basis</td><td>detail</td><td class='num muted'>—</td></tr></tbody></table>
+  <p class='note'>共 98 条, 此处展示前 60 条; 完整数据见 data/processed/pipeline.records.jsonl。</p>
+</section>
+<section>
+  <h2>审计批注与轮次时间线</h2>
+  <p class="lead">进化日志是 append-only 的失败史: 每次返工、弃权、驳回误报都留痕, 并炼化成下一次的
+     prompt 规则。当前日志 77 条, 分布 {&#x27;critic_false_positive&#x27;: 2, &#x27;selftest_start&#x27;: 6, &#x27;revise&#x27;: 12, &#x27;abstain&#x27;: 3, &#x27;selftest_end&#x27;: 3, &#x27;gt_eval&#x27;: 44, &#x27;deliverable_filter&#x27;: 5, &#x27;rule_ab&#x27;: 2}。下表列出最近 14 条实质事件。</p>
+  <table><thead><tr><th>时间</th><th>页</th><th>类型</th><th>明细</th><th>教训</th></tr></thead>
+    <tbody><tr><td class='mono'>2026-10-09 02:21:32</td><td class='num'>all</td><td>rule_ab</td><td class='mono'>{&quot;pages&quot;: 4, &quot;score_A&quot;: 10.0, &quot;score_B&quot;: 10.0, &quot;violations_A&quot;: 8, &quot;violations_B&quot;: 0, &quot;records_A&quot;: 114, &quot;records_B&quot;: 98}</td><td class='mono'>进化规则的 A/B 复跑结果(可复现的 few-shot 改进证据)</td></tr><tr><td class='mono'>2026-10-09 02:21:49</td><td class='num'>17</td><td>critic_false_positive</td><td class='mono'>{&quot;source&quot;: &quot;standalone critic run (critiques.jsonl)&quot;, &quot;score&quot;: 8, &quot;issues&quot;: [&quot;Open Pits Inferred tonnes and grade do not match the page text&quot;, &quot;Carlin Stockpiles Inferred tonnes and grade do not match the page text&quot;, &quot;Underground Inferred tonnes and grade do not match the page text&quot;]}</td><td class='mono'>critic 对摘要表版式(行名拆行/数值列重复)误报; 指控须能被页面原文+稳定复抽佐证, 否则仲裁驳回</td></tr><tr><td class='mono'>2026-10-09 02:22:05</td><td class='num'>192</td><td>revise</td><td class='mono'>{&quot;score&quot;: 10, &quot;issues&quot;: [&quot;Gold Quarry (M&amp;I): 守恒违背 55x1.99/31.1035=3.519 但 contained=35.0&quot;]}</td><td class='mono'>Gold Quarry (M&amp;I): 守恒违背 55x1.99/31.1035=3.519 但 contained=35.0</td></tr><tr><td class='mono'>2026-10-09 02:22:21</td><td class='num'>192</td><td>revise</td><td class='mono'>{&quot;score&quot;: 10, &quot;issues&quot;: [&quot;Gold Quarry (M&amp;I): 守恒违背 55x1.99/31.1035=3.519 但 contained=35.0&quot;]}</td><td class='mono'>Gold Quarry (M&amp;I): 守恒违背 55x1.99/31.1035=3.519 但 contained=35.0</td></tr><tr><td class='mono'>2026-10-09 02:22:30</td><td class='num'>192</td><td>abstain</td><td class='mono'>{&quot;rounds&quot;: 1, &quot;critic_score&quot;: 10, &quot;issues&quot;: [&quot;Gold Quarry (M&amp;I): 守恒违背 55x1.99/31.1035=3.519 但 contained=35.0&quot;]}</td><td class='mono'>轮次用尽仍不达标, 弃权转人工审核, 不硬给</td></tr><tr><td class='mono'>2026-10-09 03:18:52</td><td class='num'>all</td><td>deliverable_filter</td><td class='mono'>[[&quot;summary&quot;, &quot;Open Pits&quot;, &quot;Indicated&quot;, 17], [&quot;summary&quot;, &quot;Open Pits&quot;, &quot;M&amp;I&quot;, 17], [&quot;summary&quot;, &quot;Open Pits&quot;, &quot;Inferred&quot;, 17], [&quot;summary&quot;, &quot;Carlin Stockpiles&quot;, &quot;Measured&quot;, 17], [&quot;summary&quot;, &quot;Carlin Stockpiles&quot;, &quot;Indicated&quot;, 17], [&quot;summary&quot;, &quot;Carlin Stockpiles&quot;, &quot;M&amp;I&quot;, 17], [&quot;summary&quot;, &quot;Carlin Stockpiles&quot;</td><td class='mono'>聚合行(Total)/摘要组行/跨页重复不得进交付物: 由代码在交付前剔除或标注并留痕</td></tr><tr><td class='mono'>2026-10-09 03:29:16</td><td class='num'>154</td><td>revise</td><td class='mono'>{&quot;score&quot;: 10, &quot;issues&quot;: [&quot;Underground (Measured): 原文该行是聚合行(Total), 不得作为矿点记录&quot;, &quot;Underground (Indicated): 原文该行是聚合行(Total), 不得作为矿点记录&quot;, &quot;Underground (M&amp;I): 原文该行是聚合行(Total), 不得作为矿点记录&quot;, &quot;Underground (Inferred): 原文该行是聚合行(Total), 不得作为矿点记录&quot;]}</td><td class='mono'>Underground (Measured): 原文该行是聚合行(Total), 不得作为矿点记录 | Underground (Indicated): 原文该行是聚合行(Total), 不得作为矿点记录 | Underground (M&amp;I): 原文该行是聚合行(Total), 不得作为矿点记录</td></tr><tr><td class='mono'>2026-10-09 03:29:44</td><td class='num'>all</td><td>deliverable_filter</td><td class='mono'>[[&quot;summary&quot;, &quot;Open Pits&quot;, &quot;Indicated&quot;, 17], [&quot;summary&quot;, &quot;Open Pits&quot;, &quot;M&amp;I&quot;, 17], [&quot;summary&quot;, &quot;Open Pits&quot;, &quot;Inferred&quot;, 17], [&quot;summary&quot;, &quot;Carlin Stockpiles&quot;, &quot;Measured&quot;, 17], [&quot;summary&quot;, &quot;Carlin Stockpiles&quot;, &quot;Indicated&quot;, 17], [&quot;summary&quot;, &quot;Carlin Stockpiles&quot;, &quot;M&amp;I&quot;, 17], [&quot;summary&quot;, &quot;Carlin Stockpiles&quot;</td><td class='mono'>聚合行(Total)/摘要组行/跨页重复不得进交付物: 由代码在交付前剔除或标注并留痕</td></tr><tr><td class='mono'>2026-10-09 13:48:50</td><td class='num'>154</td><td>revise</td><td class='mono'>{&quot;score&quot;: 10, &quot;issues&quot;: [&quot;Underground (Measured): 原文该行是聚合行(Total), 不得作为矿点记录&quot;, &quot;Underground (Indicated): 原文该行是聚合行(Total), 不得作为矿点记录&quot;, &quot;Underground (M&amp;I): 原文该行是聚合行(Total), 不得作为矿点记录&quot;, &quot;Underground (Inferred): 原文该行是聚合行(Total), 不得作为矿点记录&quot;]}</td><td class='mono'>Underground (Measured): 原文该行是聚合行(Total), 不得作为矿点记录 | Underground (Indicated): 原文该行是聚合行(Total), 不得作为矿点记录 | Underground (M&amp;I): 原文该行是聚合行(Total), 不得作为矿点记录</td></tr><tr><td class='mono'>2026-10-09 13:49:20</td><td class='num'>all</td><td>deliverable_filter</td><td class='mono'>[[&quot;summary&quot;, &quot;Open Pits&quot;, &quot;Indicated&quot;, 17], [&quot;summary&quot;, &quot;Open Pits&quot;, &quot;M&amp;I&quot;, 17], [&quot;summary&quot;, &quot;Open Pits&quot;, &quot;Inferred&quot;, 17], [&quot;summary&quot;, &quot;Carlin Stockpiles&quot;, &quot;Measured&quot;, 17], [&quot;summary&quot;, &quot;Carlin Stockpiles&quot;, &quot;Indicated&quot;, 17], [&quot;summary&quot;, &quot;Carlin Stockpiles&quot;, &quot;M&amp;I&quot;, 17], [&quot;summary&quot;, &quot;Carlin Stockpiles&quot;</td><td class='mono'>聚合行(Total)/摘要组行/跨页重复不得进交付物: 由代码在交付前剔除或标注并留痕</td></tr><tr><td class='mono'>2026-10-09 13:49:39</td><td class='num'>192</td><td>revise</td><td class='mono'>{&quot;score&quot;: 10, &quot;issues&quot;: [&quot;Gold Quarry (M&amp;I): 守恒违背 55x1.99x0.0321507=3.5189 但 metal=35.0 Moz&quot;]}</td><td class='mono'>Gold Quarry (M&amp;I): 守恒违背 55x1.99x0.0321507=3.5189 但 metal=35.0 Moz</td></tr><tr><td class='mono'>2026-10-09 13:49:58</td><td class='num'>192</td><td>revise</td><td class='mono'>{&quot;score&quot;: 10, &quot;issues&quot;: [&quot;Gold Quarry (M&amp;I): 守恒违背 55x1.99x0.0321507=3.5189 但 metal=35.0 Moz&quot;]}</td><td class='mono'>Gold Quarry (M&amp;I): 守恒违背 55x1.99x0.0321507=3.5189 但 metal=35.0 Moz</td></tr><tr><td class='mono'>2026-10-09 13:50:07</td><td class='num'>192</td><td>abstain</td><td class='mono'>{&quot;rounds&quot;: 1, &quot;critic_score&quot;: 10, &quot;issues&quot;: [&quot;Gold Quarry (M&amp;I): 守恒违背 55x1.99x0.0321507=3.5189 但 metal=35.0 Moz&quot;]}</td><td class='mono'>轮次用尽仍不达标, 弃权转人工审核, 不硬给</td></tr><tr><td class='mono'>2026-10-09 14:01:46</td><td class='num'>all</td><td>rule_ab</td><td class='mono'>{&quot;pages&quot;: 2, &quot;score_A&quot;: 10.0, &quot;score_B&quot;: 10.0, &quot;violations_A&quot;: 4, &quot;violations_B&quot;: 0, &quot;records_A&quot;: 53, &quot;records_B&quot;: 49}</td><td class='mono'>进化规则的 A/B 复跑结果(可复现的 few-shot 改进证据)</td></tr></tbody></table>
+</section>
+<section>
+  <h2>abstain 清单与弃权行为验收</h2>
+  <p class="lead">判定不达标的页不会硬给答案, 而是弃权转人工。故障注入演习用于证明这条路径真的走得通。</p>
+  <table><thead><tr><th>页</th><th>原因</th><th>轮次</th><th>末次评分</th><th>残留指控</th></tr></thead>
+    <tbody><tr><td colspan="5">本次运行为空 —— 干净数据下没有需要弃权的页</td></tr></tbody></table>
+  <ul class="drills"><li>演习1 只毒首次抽取: 期望 ACCEPT → 实测 <b>ACCEPT</b> (通过)</li><li>演习2 持续下毒: 期望 ABSTAIN → 实测 <b>ABSTAIN</b> (通过)</li></ul>
+  <p class="note">两次演习里 GLM 都给了满分放行, 拦住毒数据的是确定性守恒闸 —— 这就是放行权不交给模型的实测依据。</p>
+</section>
+<section>
+  <h2>GT 对账(字段级 ±5%)</h2>
+  <p class="lead">评分协议: 字段级 accuracy, 容差 ±5%, 缺失/null 记错, 单位必须与报告配置一致。
+     对账与 src/evaluate.py 共用同一份匹配代码, 不存在两套口径。</p>
+  
+  <div class="gtblock">
+    <h3>barrick_p17_gt.json <span class="muted">(7 条真值, 人工逐行核验)</span></h3>
+    <div class="kv">
+      <div><span>记录匹配</span><b>7/7</b></div>
+      <div><span>记录级全对</span><b>7/7</b></div>
+      <div><span>抽取富余</span><b>91 条(含 GT 未覆盖页, 不扣分)</b></div>
+    </div>
+    <div class="bar"><div class="fill ok" style="width:100.0%"></div></div><div class="barlabel">42/42 = 100.0%</div>
+    <table class="narrow"><thead><tr><th>字段</th><th>通过</th><th></th></tr></thead>
+      <tbody><tr><td>basis</td><td class='num'>7/7</td><td><span class=ok>通过</span></td></tr><tr><td>category</td><td class='num'>7/7</td><td><span class=ok>通过</span></td></tr><tr><td>contained</td><td class='num'>7/7</td><td><span class=ok>通过</span></td></tr><tr><td>grade</td><td class='num'>7/7</td><td><span class=ok>通过</span></td></tr><tr><td>tonnes</td><td class='num'>7/7</td><td><span class=ok>通过</span></td></tr><tr><td>unit</td><td class='num'>7/7</td><td><span class=ok>通过</span></td></tr></tbody></table>
+    <p class='note'>全部记录逐字段通过, 无偏差行。</p>
+    <details><summary>展开逐字段偏差(±5% 容差, 缺失记错, 单位必须一致)</summary>
+      <table><thead><tr><th>真值记录</th><th>类别</th><th>吨位</th><th>品位</th><th>金属量</th>
+        <th>单位</th><th>基准</th><th>抽取记录</th></tr></thead>
+        <tbody><tr><td colspan="8">无偏差</td></tr></tbody></table>
+    </details>
+  </div>
+  <div class="gtblock">
+    <h3>barrick_p192_gt.json <span class="muted">(42 条真值, 人工逐行核验)</span></h3>
+    <div class="kv">
+      <div><span>记录匹配</span><b>42/42</b></div>
+      <div><span>记录级全对</span><b>42/42</b></div>
+      <div><span>抽取富余</span><b>56 条(含 GT 未覆盖页, 不扣分)</b></div>
+    </div>
+    <div class="bar"><div class="fill ok" style="width:100.0%"></div></div><div class="barlabel">252/252 = 100.0%</div>
+    <table class="narrow"><thead><tr><th>字段</th><th>通过</th><th></th></tr></thead>
+      <tbody><tr><td>basis</td><td class='num'>42/42</td><td><span class=ok>通过</span></td></tr><tr><td>category</td><td class='num'>42/42</td><td><span class=ok>通过</span></td></tr><tr><td>contained</td><td class='num'>42/42</td><td><span class=ok>通过</span></td></tr><tr><td>grade</td><td class='num'>42/42</td><td><span class=ok>通过</span></td></tr><tr><td>tonnes</td><td class='num'>42/42</td><td><span class=ok>通过</span></td></tr><tr><td>unit</td><td class='num'>42/42</td><td><span class=ok>通过</span></td></tr></tbody></table>
+    <p class='note'>全部记录逐字段通过, 无偏差行。</p>
+    <details><summary>展开逐字段偏差(±5% 容差, 缺失记错, 单位必须一致)</summary>
+      <table><thead><tr><th>真值记录</th><th>类别</th><th>吨位</th><th>品位</th><th>金属量</th>
+        <th>单位</th><th>基准</th><th>抽取记录</th></tr></thead>
+        <tbody><tr><td colspan="8">无偏差</td></tr></tbody></table>
+    </details>
+  </div>
+  <h3>提示词泄漏检查</h3>
+  <ul><li>barrick_p17_gt.json: 7/7 条三元组与 prompt 逐字重合 —— <b>不可作为能力证据</b>(与 few-shot 同源)</li><li>barrick_p192_gt.json: 0/42 条三元组与 prompt 逐字重合 —— 零重叠, 可作为盲测能力证据</li></ul>
+</section>
+<section>
+  <h2>成本与延迟</h2>
+  <p class="lead">每次 LLM 调用单独落盘(环节 / 页 / 耗时 / prompt+completion tokens), 任务级汇总如下。
+     厂商价格随时变动, 本页只报可核对的用量与耗时, 不折算成金额。</p>
+  <div class="kv">
+    <div><span>总调用</span><b>26 次</b></div>
+    <div><span>累计耗时</span><b>121.3 s</b></div>
+    <div><span>总 tokens</span><b>63,140</b></div>
+    <div><span>单页均值</span><b>10.1 s / 5,262 tokens</b></div>
+  </div>
+  <table class="narrow">
+    <thead><tr><th>环节</th><th>调用</th><th>耗时 s</th><th>tokens</th>
+      <th>均耗时 s</th><th>均 tokens</th></tr></thead>
+    <tbody><tr><td>critic</td><td class='num'>13</td><td class='num'>64.79</td><td class='num'>24,482</td><td class='num'>4.98</td><td class='num'>1883</td></tr><tr><td>extractor</td><td class='num'>13</td><td class='num'>56.51</td><td class='num'>38,658</td><td class='num'>4.35</td><td class='num'>2974</td></tr></tbody></table>
+  <h3>逐页用量</h3>
+  <table class="narrow">
+    <thead><tr><th>页</th><th>extractor 调用/耗时/tokens</th>
+      <th>critic 调用/耗时/tokens</th><th>本页合计</th></tr></thead>
+    <tbody><tr><td class='num'>17</td><td class='num'>1 / 3.84s / 2,721</td><td class='num'>1 / 3.22s / 1,681</td><td class='num'>2 / 7.06s / 4,402</td></tr><tr><td class='num'>36</td><td class='num'>1 / 2.33s / 2,122</td><td class='num'>1 / 2.46s / 1,125</td><td class='num'>2 / 4.79s / 3,247</td></tr><tr><td class='num'>154</td><td class='num'>2 / 8.17s / 6,558</td><td class='num'>2 / 6.06s / 3,605</td><td class='num'>4 / 14.23s / 10,163</td></tr><tr><td class='num'>188</td><td class='num'>1 / 2.22s / 2,299</td><td class='num'>1 / 2.69s / 1,283</td><td class='num'>2 / 4.91s / 3,582</td></tr><tr><td class='num'>189</td><td class='num'>1 / 2.2s / 2,199</td><td class='num'>1 / 3.44s / 1,175</td><td class='num'>2 / 5.64s / 3,374</td></tr><tr><td class='num'>190</td><td class='num'>1 / 2.23s / 1,943</td><td class='num'>1 / 2.8s / 927</td><td class='num'>2 / 5.03s / 2,870</td></tr><tr><td class='num'>191</td><td class='num'>1 / 9.3s / 5,615</td><td class='num'>1 / 5.39s / 4,471</td><td class='num'>2 / 14.69s / 10,086</td></tr><tr><td class='num'>192</td><td class='num'>1 / 9.79s / 5,756</td><td class='num'>1 / 3.49s / 4,712</td><td class='num'>2 / 13.28s / 10,468</td></tr><tr><td class='num'>194</td><td class='num'>1 / 3.05s / 2,830</td><td class='num'>1 / 22.76s / 1,917</td><td class='num'>2 / 25.81s / 4,747</td></tr><tr><td class='num'>200</td><td class='num'>1 / 8.38s / 2,054</td><td class='num'>1 / 4.02s / 1,046</td><td class='num'>2 / 12.4s / 3,100</td></tr><tr><td class='num'>216</td><td class='num'>1 / 2.69s / 2,255</td><td class='num'>1 / 4.48s / 1,247</td><td class='num'>2 / 7.17s / 3,502</td></tr><tr><td class='num'>219</td><td class='num'>1 / 2.29s / 2,306</td><td class='num'>1 / 3.98s / 1,293</td><td class='num'>2 / 6.27s / 3,599</td></tr></tbody></table>
+  <p class="note">按本次 12 页的实测均值线性外推, 该报告的 12 个送审页约需
+     63,144 tokens、2.0 分钟。
+     <b>这是推算值, 不是实测值</b>; 全量报告的版本需按同样方法另行测算。</p>
+</section>
+<section>
+  <h2>仓库一致性自检</h2>
+  <p class="lead">报告里的每个数字都能被重新核对; 下表断言在渲染之前执行, 任何一条不成立都会染红。</p>
+  <table class="narrow">
+    <thead><tr><th>结果</th><th>断言</th><th>实际</th><th>期望</th></tr></thead>
+    <tbody><tr class='okrow'><td><span class='ok'>一致</span></td><td>候选页 == 124</td><td class='num'>124</td><td class='num'>124</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>送审页 &gt;= 1</td><td class='num'>12</td><td class='num'>&gt;=1</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>交付记录 == 98</td><td class='num'>98</td><td class='num'>98</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>可交付明细 == 84</td><td class='num'>84</td><td class='num'>84</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>abstain 页 == 0(干净数据)</td><td class='num'>0</td><td class='num'>0</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>p17 GT == 7 条</td><td class='num'>7</td><td class='num'>7</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>p192 GT == 42 条</td><td class='num'>42</td><td class='num'>42</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>results.json 含 abstain/mark_for_human/last_score</td><td class='num'>abstain,mark_for_human,last_score</td><td class='num'>全部</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>弃权行为验收 pass</td><td class='num'>True</td><td class='num'>True</td></tr></tbody></table>
+  <h3>子检查命令</h3>
+  <table class="narrow">
+    <thead><tr><th>结果</th><th>命令</th><th>耗时</th><th>exit code</th></tr></thead>
+    <tbody><tr class='okrow'><td><span class='ok'>通过</span></td><td class='mono'>python src/check_docs.py</td><td class='num'>0.6 s</td><td class='num'>0</td></tr><tr class='okrow'><td><span class='ok'>通过</span></td><td class='mono'>python src/selftest_guards.py</td><td class='num'>1.8 s</td><td class='num'>0</td></tr><tr class='okrow'><td><span class='ok'>通过</span></td><td class='mono'>python src/evaluate.py data/ground_truth/barrick_p192_gt.json --out output/_regress_eval.json</td><td class='num'>0.8 s</td><td class='num'>0</td></tr></tbody></table>
+</section></main>
+<footer>本页由 <code>app/report.py</code> 生成, 生成过程未调用任何模型; 所有数字均可在仓库产物中逐条核对。</footer>
+</body></html>
