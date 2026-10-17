@@ -110,6 +110,13 @@ facts = [
      "p17 GT == 7 条"),
     ("data/ground_truth/barrick_p192_gt.json",
      lambda: gt_count("data/ground_truth/barrick_p192_gt.json") == 42, "p192 GT == 42 条"),
+    ("data/ground_truth/barrick_p191_gt.json",
+     lambda: gt_count("data/ground_truth/barrick_p191_gt.json") == 42, "p191 GT == 42 条"),
+    ("data/ground_truth (全部)",
+     lambda: sum(gt_count(p) for p in
+                 [f.relative_to(ROOT).as_posix() for f in
+                  (ROOT / "data" / "ground_truth").glob("*_gt.json")]) == 91,
+     "GT 总记录 == 91 条(盲测 42 + 同源 49)"),
     ("data/evolution.jsonl", lambda: len(load_lines("data/evolution.jsonl")) >= 28,
      f"evolution.jsonl 只增不减(当前 {len(load_lines('data/evolution.jsonl'))} 条)"),
 ]

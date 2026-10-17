@@ -78,8 +78,9 @@ def run_steps(pages_rel: str, paid: bool) -> list:
     steps = [
         ("文档与仓库一致性", [py, "src/check_docs.py"]),
         ("零成本回归套件", [py, "src/selftest_guards.py"]),
-        ("GT 对账(字段级 ±5%)",
-         [py, "src/evaluate.py", "data/ground_truth/barrick_p192_gt.json",
+        ("GT 自身校验", [py, "src/verify_gt.py"]),
+        ("GT 对账(字段级 ±5% / 盲测与同源分栏)",
+         [py, "src/evaluate.py", "--gt-dir", "data/ground_truth",
           "--out", "output/_regress_eval.json"]),
     ]
     if paid:

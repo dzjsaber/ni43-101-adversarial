@@ -16,7 +16,7 @@
 |---|---|
 | 输入 PDF | 候选人**自行从公开渠道获取了 1 份真实 NI 43-101 技术报告**作为测试数据:`data/pdfs/barrick.pdf`(Barrick Carlin Complex, 报告日期 2025-03-14, **338 页 / 10.21 MB**, QP: Craig Fiddes) |
 | 文件指纹 | `SHA256 = 43380869269553E22B4F000848F49B5868773B977A0ABFD9FA0D452F9AC613DD`(可据此核对是否为同一份文件) |
-| 官方 GT | **未提供**。候选人对该报告中两页资源表**逐行手工核验**, 形成两份部分真值:`data/ground_truth/barrick_p17_gt.json`(7 条) 与 `data/ground_truth/barrick_p192_gt.json`(42 条) |
+| 官方 GT | **未提供**。候选人对该报告中两页资源表**逐行手工核验**, 形成两份部分真值:`data/ground_truth/barrick_p17_gt.json`(7 条) 与 `data/ground_truth/barrick_p192_gt.json`(42 条);另有一份**非人工核验**的同源回归集 `barrick_p191_gt.json`(42 条, 由页面文本确定性解析) |
 | Newmont / Pilbara | **输入缺失 → 两条链路无法验证**。代码里已按题目要求做好**多报告配置层**, 官方文件到手即可接入(见第 4 节) |
 | 本 README 能声称的 | 只有"在自备的 Barrick 单份报告上的实测结果";**不能**声称满足三家报告、也不存在官方 GT 准确率 |
 
@@ -93,6 +93,9 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 |---|---|---|---|
 | `data/ground_truth/barrick_p192_gt.json`(42 条, 明细表, **与提示词零重叠**) | 42/42 | **252/252 = 100.0%** | 42/42 |
 | `data/ground_truth/barrick_p17_gt.json`(7 条, 摘要表, 已知与 few-shot 同源) | 7/7 | 42/42 = 100.0% | 7/7 |
+| `data/ground_truth/barrick_p191_gt.json`(42 条, 明细表, **与 few-shot 同源, 非人工核验**) | 42/42 | 252/252 = 100.0% | 42/42 |
+
+三份合计 91 条, 但**盲测能力证据仍然只有 p192 的 42 条**; p17/p191 只用于一致性回归。
 
 **abstain 优先于准确率**(题目原话"最看重的不是准确率, 是明显错误时是否 abstain"):
 `src/selftest.py` 用故障注入把某条记录的金属量乘 10 喂回管线:
@@ -120,7 +123,7 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | `pipeline/__init__.py` | 20 | 包引导(把仓库根与 `src/` 加进 `sys.path`) | — |
 | `pipeline/_bootstrap.py` | 21 | 路径引导:清掉脚本自身目录, 避免 `pipeline/extractor.py` 里的 `import extractor` 解析到自己 | 被同目录入口模块 import |
 
-### 4.2 核心实现 `src/`(17 个)
+### 4.2 核心实现 `src/`(18 个)
 
 | 文件 | 行数 | 作用 |
 |---|---|---|
@@ -130,7 +133,7 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | `src/critic.py` | 198 | GLM 审计 1-10;物理规则随单位切换;同样打印耗时与 token 并落逐调用明细 |
 | `src/pipeline.py` | 260 | 主循环:守恒/结构闸 → critic → 指控核验 → ≤3 轮返工 → ACCEPT/ABSTAIN → 交付前终审 |
 | `src/guards.py` | 193 | **确定性终审层**:聚合行、三元组残缺、列组完整、M&I 自洽、critic 指控逐字核验、交付分类 |
-| `src/evaluate.py` | 364 | **评分协议**:字段级 ±5% accuracy + 单位核对 + 报告 `protocol` 块;`diff_pairs()` 供报告页复用 |
+| `src/evaluate.py` | 450 | **评分协议**:字段级 ±5% accuracy + 单位核对 + 报告 `protocol` 块;`diff_pairs()` 供报告页复用;`--gt-dir` 支持多份 GT 并按盲测/同源分栏 |
 | `src/spec_export.py` | 125 | 导出题目要求结构 `output/results.json`(indicated/inferred/评分/abstain) |
 | `src/run_all.py` | 88 | 一份报告一条命令走完 7 步 |
 | `src/selftest.py` | 145 | 故障注入演习 + 写 `output/protocol_check.json` |
@@ -140,14 +143,15 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | `src/mineral_mcp.py` | 471 | MCP 工具层:零依赖 stdio + 费用护栏 + 路径白名单 + 10 个工具(对 resources/prompts 探测友好) |
 | `src/mcp_probe.py` | 185 | 模拟 MCP 宿主做真握手(零成本验证) |
 | `src/usage_log.py` | 110 | **逐调用 usage / 耗时明细落盘**(`NI43_USAGE_LOG` 开关;未设置时为空操作, CLI 行为不变) |
-| `src/check_docs.py` | 139 | 文档与仓库一致性闸门(文件引用/行数/产物条数) |
+| `src/verify_gt.py` | 236 | **GT 自身确定性校验**:三元组逐字命中原文、聚合行、重复、守恒、单位;零成本 |
+| `src/check_docs.py` | 141 | 文档与仓库一致性闸门(文件引用/行数/产物条数) |
 
 ### 4.2b 平台壳 `app/`(3 个) —— 只读产物, 不重写 `src/` 的逻辑
 
 | 文件 | 行数 | 作用 |
 |---|---|---|
 | `app/report.py` | — | 生成一页**自包含**的可视化报告 `output/report.html`(机制/逐页/结果/审计/abstain/对账/成本/自检) |
-| `app/regress.py` | 162 | **一键回归**:跑自检 → 出报告 → 写 `output/regress.json`;`--run` 才真实重跑管线 |
+| `app/regress.py` | 163 | **一键回归**:跑自检 → 出报告 → 写 `output/regress.json`;`--run` 才真实重跑管线 |
 | `app/__init__.py` | 14 | 包引导与路径常量 |
 
 > `app/report.py` 与 `src/check_docs.py` 的行数不写死在这里(它们自己也生成/校验文档, 写了会自相矛盾)。
@@ -161,6 +165,7 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | `data/pdfs/barrick.config.json` | 该报告配置:Au / g/t / Moz / factor=1÷31.1035 / 容差 10% / 关键词 |
 | `data/ground_truth/barrick_p192_gt.json` | 手工核验真值 42 条(**与提示词零重叠**, 能力证据) |
 | `data/ground_truth/barrick_p17_gt.json` | 手工核验真值 7 条(摘要表;已剔除聚合行、补齐 Indicated) |
+| `data/ground_truth/barrick_p191_gt.json` | 42 条明细, **与 few-shot 同源**;由页面文本层确定性解析 + 与模型输出交叉印证, **非人工核验**, 仅作一致性回归 |
 | `data/processed/*.pages.jsonl` | 定位出的候选页(124 条) |
 | `data/processed/extracted.jsonl` | Extractor 原始输出(未过闸, 条数会波动: 实测 98~106) |
 | `data/processed/critiques.jsonl` | CriticMaster 独立评分 |
@@ -172,6 +177,7 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | `output/regress.json` | 一键回归的机器可读结果(各子检查 exit code / 耗时 / 是否恢复产物) |
 | `output/usage.jsonl` | **逐次 LLM 调用明细**(agent/页/耗时/tokens);真实运行时由 `NI43_USAGE_LOG` 打开 |
 | `output/_regress_eval.json` | 回归期间的对账结果(避免覆盖权威 `eval_report.json`) |
+| `output/gt_check.json` | GT 自身机械校验结果(逐份/逐条, `src/verify_gt.py` 生成) |
 | `data/processed/replay_ab.json` | 进化规则 A/B 结果 |
 | `data/evolution.jsonl` | 失败/返工/弃权/演习/对账轨迹(**append-only**) |
 | `data/evolved_rules.txt` / `data/evolved_critic_rules.txt` | 炼化出的两端规则 |
@@ -233,6 +239,8 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | **一键回归 + 可视化报告**(零成本) | `python app/regress.py` | 自检全绿, 产出 `output/report.html`(双击打开) |
 | 一键回归含真实重跑 | `python app/regress.py --run` | 重跑送审页 → 出报告 → 自动恢复产物, `git status` 干净 |
 | 只出报告(已有产物) | `python app/report.py` | 生成 `output/report.html`, 不调用模型 |
+| **GT 自身校验**(零成本) | `python src/verify_gt.py` | 3 份 GT / 91 条全部通过机械校验 |
+| 多份 GT 分栏对账 | `python src/evaluate.py --gt-dir data/ground_truth` | 盲测集与同源集分开统计 |
 | 题目主入口(全链路) | `python pipeline/revise_loop.py --pdf data/pdfs/barrick.pdf --gt data/ground_truth/barrick_p192_gt.json` | 5 步全绿 + `output/results.json` |
 | 只算计划不花钱 | 同上加 `--dry-run` | 打印步骤与预计调用量, 不调用 API |
 | **评分协议**(字段级 ±5%) | `python src/evaluate.py data/ground_truth/barrick_p192_gt.json` | 匹配 42/42, **252/252 = 100%** |
@@ -264,6 +272,7 @@ pip install -r requirements.txt            # 必需依赖
 pip install -r requirements-optional.txt   # 可选(.env / 进度条)
 
 python app/regress.py                                                     # 零成本: 一键回归 + 出可视化报告
+python src/verify_gt.py                                                   # 零成本: GT 自身机械校验
 python src/check_docs.py                                                  # 零成本: 文档一致性
 python src/selftest_guards.py                                             # 零成本: 回归
 python pipeline/revise_loop.py --pdf data/pdfs/barrick.pdf --dry-run       # 零成本: 看计划

@@ -268,15 +268,79 @@ def as_pred_rows(pred, cfg):
              "metal_unit": r.get("metal_unit") or cfg["metal_unit"]} for r in pred]
 
 
+def gt_kind(gt_path: Path) -> str:
+    """盲测集 / 同源集的判定: 文件里声明优先, 否则按约定(p192 是盲测页)。"""
+    try:
+        obj = json.loads(gt_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return "same_source"
+    return (obj.get("_kind") if isinstance(obj, dict) else None) or (
+        "blind" if "p192" in gt_path.name else "same_source")
+
+
+def gt_human_reviewed(gt_path: Path) -> bool:
+    """核验方式可追溯: _verified.human_review 优先, 其次 _readme 自述; 否则按未核验。"""
+    try:
+        obj = json.loads(gt_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    if not isinstance(obj, dict):
+        return False
+    meta = obj.get("_verified")
+    if isinstance(meta, dict) and "human_review" in meta:
+        return bool(meta["human_review"])
+    readme = str(obj.get("_readme") or "").lower()
+    return ("hand-transcribed" in readme) or ("re-verified line by line" in readme)
+
+
+def evaluate_one(gt_path: Path, pred_rows: list, cfg: dict, source_label: str = None) -> dict:
+    """对一份 GT 做字段级对账, 返回可合并的报告块。"""
+    gt_raw = load_gt(gt_path)
+    src = source_label or str(gt_path)
+    gt_rows, n_skip, _ = build_gt_rows(gt_raw)
+    details, m, used_p = diff_pairs(gt_rows, pred_rows, cfg)
+    fields = {k: [0, 0] for k in ("category", "tonnes", "grade", "contained", "unit", "basis")}
+    for det in details:
+        for name, cell in det["fields"].items():
+            fields[name][0] += 1
+            fields[name][1] += 1 if cell["pass"] else 0
+    perfect = sum(1 for d in details if d["all_pass"])
+    tot = sum(v[0] for v in fields.values())
+    cor = sum(v[1] for v in fields.values())
+    extras = [f"{p['deposit']} [{p['category']}] p{p['page']}"
+              for pi, p in enumerate(pred_rows) if pi not in used_p]
+    miss = [d["gt"] for d in details if not d["matched"]]
+    return {"name": gt_path.name, "kind": gt_kind(gt_path),
+            "human_review": gt_human_reviewed(gt_path), "source": src,
+            "summary": {"gt_records": len(gt_rows), "matched": len(m), "field_total": tot,
+                        "field_correct": cor,
+                        "field_accuracy": round(cor / tot, 4) if tot else None,
+                        "perfect_records": perfect, "skipped_aggregates": n_skip,
+                        "per_field": {k: {"scored": v[0], "correct": v[1]}
+                                      for k, v in fields.items() if v[0]}},
+            "unmatched_gt": miss, "extra_pred": extras, "details": details}
+
+
+def print_set(r: dict) -> None:
+    s = r["summary"]
+    pct = (s["field_correct"] / s["field_total"] * 100) if s["field_total"] else 0.0
+    print(f"  {r['name']}  {s['gt_records']} 条 | 匹配 {s['matched']}/{s['gt_records']} | "
+          f"字段 {s['field_correct']}/{s['field_total']} = {pct:.1f}% | "
+          f"kind={r['kind']} | 人工核验={'是' if r['human_review'] else '否'}")
+
+
 def main():
     report_config.setup_stdio()
     # --out <path>: 把报告写到指定文件, 供回归/平台调用 —— 不覆盖 git 跟踪的
     # data/processed/eval_report.json, 也不往 evolution.jsonl 追加轨迹。
-    out_override, rest = None, []
+    out_override, gt_dir, rest = None, None, []
     argv, k = sys.argv[1:], 0
     while k < len(argv):
         if argv[k] == "--out" and k + 1 < len(argv):
             out_override, k = Path(argv[k + 1]), k + 2
+            continue
+        if argv[k] == "--gt-dir" and k + 1 < len(argv):
+            gt_dir, k = Path(argv[k + 1]), k + 2
             continue
         rest.append(argv[k])
         k += 1
@@ -288,65 +352,86 @@ def main():
     pred = [json.loads(l) for l in pred_path.read_text(encoding="utf-8").splitlines() if l.strip()]
     if demo:
         demo_gt = ROOT / "data" / "ground_truth" / "barrick_p17_gt.json"
-        gt_raw, src = load_gt(demo_gt), f"demo: {demo_gt.name} (冒烟测试, 与 --demo 前的内置副本无关)"
+        src = f"demo: {demo_gt.name} (冒烟测试, 与 --demo 前的内置副本无关)"
         pred = [r for r in pred if r.get("source_page") == 17]
     else:
-        gt_path = Path(args[0]) if args else ROOT / "data" / "ground_truth" / "barrick_gt.json"
-        if not gt_path.exists():
-            print(f"未找到 GT 文件 {gt_path}\n最小可用格式(每行一个对象或JSON数组, 字段名自动识别):\n"
-                  '  {"deposit":"Open Pits","category":"Inferred","tonnes_mt":42,'
-                  '"grade":1.2,"grade_unit":"g/t","metal":1.7,"metal_unit":"Moz","page":17}\n'
-                  "也可先跑冒烟测试: python src/evaluate.py --demo")
-            return
-        gt_raw, src = load_gt(gt_path), str(gt_path)
+        if gt_dir:
+            src = str(gt_dir)
+        else:
+            gt_path = Path(args[0]) if args else ROOT / "data" / "ground_truth" / "barrick_gt.json"
+            if not gt_path.exists():
+                print(f"未找到 GT 文件 {gt_path}\n最小可用格式(每行一个对象或JSON数组, 字段名自动识别):\n"
+                      '  {"deposit":"Open Pits","category":"Inferred","tonnes_mt":42,'
+                      '"grade":1.2,"grade_unit":"g/t","metal":1.7,"metal_unit":"Moz","page":17}\n'
+                      "也可先跑冒烟测试: python src/evaluate.py --demo")
+                return
+            src = str(gt_path)
 
-    gt_rows, n_skip, _ = build_gt_rows(gt_raw)
     # 兼容两代字段名: 新产物用 grade/metal, 旧产物用 grade_gpt/contained_moz
     cfg = report_config.load(pred_path)
     pred_rows = as_pred_rows(pred, cfg)
 
-    details, m, used_p = diff_pairs(gt_rows, pred_rows, cfg)
-    fields = {k: [0, 0] for k in ("category", "tonnes", "grade", "contained", "unit", "basis")}
-    for det in details:
-        for name, cell in det["fields"].items():
-            fields[name][0] += 1
-            fields[name][1] += 1 if cell["pass"] else 0
-    perfect = sum(1 for d in details if d["all_pass"])
+    protocol = {"metric": "field_accuracy", "tolerance": TOLERANCE,
+                "missing_counts_as_wrong": True, "unit_must_match": True,
+                "unit_reference": {"grade_unit": cfg["grade_unit"],
+                                   "metal_unit": cfg["metal_unit"]},
+                "scored_fields": ["category", "tonnes", "grade", "contained", "unit", "basis"]}
 
-    tot = sum(v[0] for v in fields.values())
-    cor = sum(v[1] for v in fields.values())
-    extras = [f"{p['deposit']} [{p['category']}] p{p['page']}"
-              for pi, p in enumerate(pred_rows) if pi not in used_p]
-    miss = [d["gt"] for d in details if not d["matched"]]
+    if demo:
+        one = evaluate_one(demo_gt, pred_rows, cfg)
+        one["source"] = src
+        sets = [one]
+    elif gt_dir:
+        folder = gt_dir if gt_dir.is_absolute() else ROOT / gt_dir
+        gt_files = sorted(folder.glob("*_gt.json"))
+        if not gt_files:
+            sys.exit(f"{folder} 下没有 *_gt.json")
+        sets = [evaluate_one(f, pred_rows, cfg) for f in gt_files]
+    else:
+        sets = [evaluate_one(gt_path, pred_rows, cfg)]
 
-    print(f"== evaluate ({'冒烟测试' if demo else '真实GT'}: {src}) ==")
+    print(f"== evaluate ({'冒烟测试' if demo else '真实GT'}: "
+          f"{len(sets)} 份 GT) ==")
     print(f"评分协议: 字段级 accuracy, 容差 ±{int(TOLERANCE * 100)}%; 缺失/null 记错; "
           f"单位必须与报告配置一致({cfg['grade_unit']} / {cfg['metal_unit']})")
-    print(f"GT 记录 {len(gt_rows)} 条 (跳过聚合 {n_skip}) | 抽取记录 {len(pred_rows)} 条")
-    print(f"匹配 {len(m)}/{len(gt_rows)} | GT 未匹配 {len(miss)} | 抽取富余 {len(extras)}"
-          f"(富余含 GT 未覆盖页的记录, 不扣分)")
-    if miss:
-        print("GT 未匹配(核对字段映射/名称):", miss[:8])
-    print(f"字段级准确率 (±{int(TOLERANCE*100)}%): {cor}/{tot} = {cor/tot*100 if tot else 0:.1f}%")
-    for name in ("category", "tonnes", "grade", "contained", "unit", "basis"):
-        n, c = fields[name]
-        if n:
-            print(f"  {name:<9}: {c}/{n}")
-    print(f"记录级全对: {perfect}/{len(m)}")
+    for r in sets:
+        print_set(r)
 
-    report = {"source": src, "tolerance": TOLERANCE,
-              "protocol": {"metric": "field_accuracy", "tolerance": TOLERANCE,
-                           "missing_counts_as_wrong": True,
-                           "unit_must_match": True,
-                           "unit_reference": {"grade_unit": cfg["grade_unit"],
-                                              "metal_unit": cfg["metal_unit"]},
-                           "scored_fields": ["category", "tonnes", "grade", "contained",
-                                             "unit", "basis"]},
-              "summary": {"gt_records": len(gt_rows), "matched": len(m), "field_total": tot,
-                          "field_correct": cor, "field_accuracy": round(cor / tot, 4) if tot else None,
-                          "perfect_records": perfect, "skipped_aggregates": n_skip,
-                          "per_field": {k: {"scored": v[0], "correct": v[1]} for k, v in fields.items() if v[0]}},
-              "unmatched_gt": miss, "extra_pred": extras, "details": details}
+    def merge(rs, label):
+        s = {"gt_records": 0, "matched": 0, "field_total": 0, "field_correct": 0,
+             "perfect_records": 0, "skipped_aggregates": 0, "per_field": {}, "label": label}
+        for r in rs:
+            for k in ("gt_records", "matched", "field_total", "field_correct",
+                      "perfect_records", "skipped_aggregates"):
+                s[k] += r["summary"][k]
+            for f, v in r["summary"]["per_field"].items():
+                slot = s["per_field"].setdefault(f, {"scored": 0, "correct": 0})
+                slot["scored"] += v["scored"]
+                slot["correct"] += v["correct"]
+        s["field_accuracy"] = round(s["field_correct"] / s["field_total"], 4) if s["field_total"] else None
+        return s
+
+    blind = [r for r in sets if r["kind"] == "blind"]
+    same = [r for r in sets if r["kind"] != "blind"]
+    combined = merge(sets, "全部")
+    primary = merge(blind, "盲测集") if blind else combined
+    print(f"  合计: {combined['gt_records']} 条, 字段 {combined['field_correct']}/"
+          f"{combined['field_total']} = {(combined['field_accuracy'] or 0) * 100:.1f}%")
+    if blind:
+        print(f"  盲测集(能力证据): {primary['gt_records']} 条, 字段 "
+              f"{primary['field_correct']}/{primary['field_total']} = "
+              f"{(primary['field_accuracy'] or 0) * 100:.1f}%")
+    if same:
+        print(f"  同源集(仅一致性回归, 不计入能力证据): {len(same)} 份")
+
+    report = {"source": src, "tolerance": TOLERANCE, "protocol": protocol,
+              "mode": "multi" if len(sets) > 1 else "single",
+              "sets": sets, "combined": combined, "blind": primary, "same_source": merge(same, "同源集") if same else None,
+              # 顶层 summary 保持向后兼容: 优先盲测集, 没有盲测集才用合计
+              "summary": primary,
+              "unmatched_gt": [m for r in sets for m in r["unmatched_gt"]],
+              "extra_pred": sets[0]["extra_pred"] if len(sets) == 1 else [],
+              "details": sets[0]["details"] if len(sets) == 1 else []}
     out = out_override or (ROOT / "data" / "processed" / "eval_report.json")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -355,7 +440,8 @@ def main():
     if out_override is None:            # --out 走"无副作用"模式, 不写权威进化日志
         ev = {"ts": time.strftime("%Y-%m-%d %H:%M:%S"), "page": "all",
               "kind": "gt_eval", "detail": report["summary"],
-              "lesson": "" if demo else f"GT对账 字段级准确率 {cor}/{tot}"}
+              "lesson": "" if demo else
+              f"GT对账(盲测集) 字段级准确率 {primary['field_correct']}/{primary['field_total']}"}
         with (ROOT / "data" / "evolution.jsonl").open("a", encoding="utf-8") as f:
             f.write(json.dumps(ev, ensure_ascii=False) + "\n")
 

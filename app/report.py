@@ -90,6 +90,7 @@ def gt_diffs(records: list, cfg: dict) -> list:
     pred_rows = evaluate.as_pred_rows(records, cfg)
     out = []
     for gt_file in sorted(GT_DIR.glob("*_gt.json")):
+        meta = load_json(gt_file) or {}
         gt_rows, skipped, _fmap = evaluate.build_gt_rows(evaluate.load_gt(gt_file))
         if not gt_rows:
             continue
@@ -103,6 +104,9 @@ def gt_diffs(records: list, cfg: dict) -> list:
                 slot[0] += 1
                 slot[1] += 1 if cell["pass"] else 0
         out.append({"name": gt_file.name, "gt_rows": len(gt_rows), "skipped": skipped,
+                    "kind": evaluate.gt_kind(gt_file),
+                    "human": evaluate.gt_human_reviewed(gt_file),
+                    "warning": (meta.get("_warning") if isinstance(meta, dict) else None),
                     "matched": len(m), "field_total": scored, "field_correct": passed,
                     "field_accuracy": round(passed / scored, 4) if scored else None,
                     "perfect": sum(1 for d in details if d["all_pass"]),
@@ -122,11 +126,14 @@ def leakage_check() -> list:
         sys.argv = saved
     blob = ns["SYSTEM_PROMPT"] + ns["FEWSHOT_USER"] + ns["FEWSHOT_ASSISTANT"]
     out = []
-    for name in ("barrick_p17_gt.json", "barrick_p192_gt.json"):
-        obj = load_json(GT_DIR / name)
+    for gt_file in sorted(GT_DIR.glob("*_gt.json")):
+        name = gt_file.name
+        obj = load_json(gt_file)
         rows = (obj or {}).get("records") if isinstance(obj, dict) else obj
         if not rows:
             continue
+        kind = (obj or {}).get("_kind") if isinstance(obj, dict) else None
+        kind = kind or ("blind" if "p192" in name else "same_source")
         leaks = 0
         for r in rows:
             r = report_config.normalize(r)
@@ -134,7 +141,7 @@ def leakage_check() -> list:
                     if r.get(k) is not None]
             if len(nums) == 3 and all(n in blob for n in nums):
                 leaks += 1
-        out.append({"name": name, "total": len(rows), "leaked": leaks})
+        out.append({"name": name, "total": len(rows), "leaked": leaks, "kind": kind})
     return out
 
 
@@ -166,6 +173,9 @@ def repo_consistency() -> dict:
     protocol = load_json(OUT_DIR / "protocol_check.json") or {}
     gt17 = load_json(GT_DIR / "barrick_p17_gt.json") or {}
     gt192 = load_json(GT_DIR / "barrick_p192_gt.json") or {}
+    gt191 = load_json(GT_DIR / "barrick_p191_gt.json") or {}
+    gt_all = sum(len((load_json(f) or {}).get("records", []))
+                 for f in GT_DIR.glob("*_gt.json"))
     n_elig = len([p for p in pages if p["score"] >= MIN_SCORE])
     keys = ("abstain", "mark_for_human", "last_score")
     rows = [
@@ -177,6 +187,9 @@ def repo_consistency() -> dict:
         ("p17 GT == 7 条", len(gt17.get("records", [])), 7, len(gt17.get("records", [])) == 7),
         ("p192 GT == 42 条", len(gt192.get("records", [])), 42,
          len(gt192.get("records", [])) == 42),
+        ("p191 GT == 42 条", len(gt191.get("records", [])), 42,
+         len(gt191.get("records", [])) == 42),
+        ("GT 总记录 == 91", gt_all, 91, gt_all == 91),
         ("results.json 含 " + "/".join(keys),
          ",".join(k for k in keys if k in results), "全部",
          all(k in results for k in keys)),
@@ -496,9 +509,12 @@ def render_gt(d: dict) -> str:
                                + f"<td class='muted'>{esc(det.get('pred', '未匹配'))}</td></tr>")
         tail = ("<p class='note'>下表只列字段有偏差或未匹配的记录; 全对的记录不占篇幅。</p>"
                 if detail_rows else "<p class='note'>全部记录逐字段通过, 无偏差行。</p>")
+        kind_txt = "盲测集" if g["kind"] == "blind" else "同源集"
+        human_txt = "人工逐行核验" if g["human"] else "非人工核验, 仅作回归"
         blocks.append(f"""
   <div class="gtblock">
-    <h3>{esc(g['name'])} <span class="muted">({g['gt_rows']} 条真值, 人工逐行核验)</span></h3>
+    <h3>{esc(g['name'])} <span class="muted">({g['gt_rows']} 条真值 | {kind_txt} | {human_txt})</span></h3>
+    {f"<p class='note'>{esc(g['warning'])}</p>" if g.get("warning") else ""}
     <div class="kv">
       <div><span>记录匹配</span><b>{g['matched']}/{g['gt_rows']}</b></div>
       <div><span>记录级全对</span><b>{g['perfect']}/{g['matched']}</b></div>
@@ -517,7 +533,8 @@ def render_gt(d: dict) -> str:
     leak = "".join(
         f"<li>{esc(x['name'])}: {x['leaked']}/{x['total']} 条三元组与 prompt 逐字重合"
         + (" —— <b>不可作为能力证据</b>(与 few-shot 同源)" if x["leaked"]
-           else " —— 零重叠, 可作为盲测能力证据") + "</li>" for x in d["leakage"])
+           else (" —— 零重叠, 可作为盲测能力证据" if x["kind"] == "blind"
+                 else " —— 零重叠, 但仍按同源集处理")) + "</li>" for x in d["leakage"])
     return f"""
 <section>
   <h2>GT 对账(字段级 ±5%)</h2>

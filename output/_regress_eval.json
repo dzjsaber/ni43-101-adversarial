@@ -1,5 +1,5 @@
 {
-  "source": "data\\ground_truth\\barrick_p192_gt.json",
+  "source": "data\\ground_truth",
   "tolerance": 0.05,
   "protocol": {
     "metric": "field_accuracy",
@@ -19,12 +19,3849 @@
       "basis"
     ]
   },
-  "summary": {
+  "mode": "multi",
+  "sets": [
+    {
+      "name": "barrick_p17_gt.json",
+      "kind": "same_source",
+      "human_review": true,
+      "source": "D:\\86177\\Documents\\ni43-101-adversarial\\data\\ground_truth\\barrick_p17_gt.json",
+      "summary": {
+        "gt_records": 7,
+        "matched": 7,
+        "field_total": 42,
+        "field_correct": 42,
+        "field_accuracy": 1.0,
+        "perfect_records": 7,
+        "skipped_aggregates": 0,
+        "per_field": {
+          "category": {
+            "scored": 7,
+            "correct": 7
+          },
+          "tonnes": {
+            "scored": 7,
+            "correct": 7
+          },
+          "grade": {
+            "scored": 7,
+            "correct": 7
+          },
+          "contained": {
+            "scored": 7,
+            "correct": 7
+          },
+          "unit": {
+            "scored": 7,
+            "correct": 7
+          },
+          "basis": {
+            "scored": 7,
+            "correct": 7
+          }
+        }
+      },
+      "unmatched_gt": [],
+      "extra_pred": [
+        "Gold Quarry [Indicated] p191",
+        "Gold Quarry [M&I] p191",
+        "Gold Quarry [Inferred] p191",
+        "Goldstar [Indicated] p191",
+        "Goldstar [M&I] p191",
+        "Goldstar [Inferred] p191",
+        "Goldstrike [Indicated] p191",
+        "Goldstrike [M&I] p191",
+        "Goldstrike [Inferred] p191",
+        "Green Lantern [Indicated] p191",
+        "Green Lantern [M&I] p191",
+        "Green Lantern [Inferred] p191",
+        "South Arturo OP [Indicated] p191",
+        "South Arturo OP [M&I] p191",
+        "South Arturo OP [Inferred] p191",
+        "Carlin Stockpiles [Measured] p191",
+        "Carlin Stockpiles [Indicated] p191",
+        "Carlin Stockpiles [M&I] p191",
+        "Carlin Stockpiles [Inferred] p191",
+        "Exodus [Indicated] p191",
+        "Exodus [M&I] p191",
+        "Exodus [Inferred] p191",
+        "Fallon [Inferred] p191",
+        "Goldstrike [Indicated] p191",
+        "Goldstrike [M&I] p191",
+        "Goldstrike [Inferred] p191",
+        "Leeville [Indicated] p191",
+        "Leeville [M&I] p191",
+        "Leeville [Inferred] p191",
+        "Pete Bajo [Indicated] p191",
+        "Pete Bajo [M&I] p191",
+        "Pete Bajo [Inferred] p191",
+        "Ren [Indicated] p191",
+        "Ren [M&I] p191",
+        "Ren [Inferred] p191",
+        "Rita K [Indicated] p191",
+        "Rita K [M&I] p191",
+        "Rita K [Inferred] p191",
+        "South Arturo UG [Measured] p191",
+        "South Arturo UG [Indicated] p191",
+        "South Arturo UG [M&I] p191",
+        "South Arturo UG [Inferred] p191",
+        "Gold Quarry [Indicated] p192",
+        "Gold Quarry [M&I] p192",
+        "Gold Quarry [Inferred] p192",
+        "Goldstar [Indicated] p192",
+        "Goldstar [M&I] p192",
+        "Goldstar [Inferred] p192",
+        "Goldstrike [Indicated] p192",
+        "Goldstrike [M&I] p192",
+        "Goldstrike [Inferred] p192",
+        "Green Lantern [Indicated] p192",
+        "Green Lantern [M&I] p192",
+        "Green Lantern [Inferred] p192",
+        "South Arturo OP [Indicated] p192",
+        "South Arturo OP [M&I] p192",
+        "South Arturo OP [Inferred] p192",
+        "Carlin Stockpiles Attrib. [Measured] p192",
+        "Carlin Stockpiles Attrib. [Indicated] p192",
+        "Carlin Stockpiles Attrib. [M&I] p192",
+        "Carlin Stockpiles Attrib. [Inferred] p192",
+        "Exodus [Indicated] p192",
+        "Exodus [M&I] p192",
+        "Exodus [Inferred] p192",
+        "Fallon [Inferred] p192",
+        "Goldstrike [Indicated] p192",
+        "Goldstrike [M&I] p192",
+        "Goldstrike [Inferred] p192",
+        "Leeville [Indicated] p192",
+        "Leeville [M&I] p192",
+        "Leeville [Inferred] p192",
+        "Pete Bajo [Indicated] p192",
+        "Pete Bajo [M&I] p192",
+        "Pete Bajo [Inferred] p192",
+        "Ren [Indicated] p192",
+        "Ren [M&I] p192",
+        "Ren [Inferred] p192",
+        "Rita K [Indicated] p192",
+        "Rita K [M&I] p192",
+        "Rita K [Inferred] p192",
+        "South Arturo UG [Measured] p192",
+        "South Arturo UG [Indicated] p192",
+        "South Arturo UG [M&I] p192",
+        "South Arturo UG [Inferred] p192",
+        "Open Pits [Indicated] p154",
+        "Open Pits [M&I] p154",
+        "Open Pits [Inferred] p154",
+        "Carlin Stockpiles [Measured] p154",
+        "Carlin Stockpiles [Indicated] p154",
+        "Carlin Stockpiles [M&I] p154",
+        "Carlin Stockpiles [Inferred] p154"
+      ],
+      "details": [
+        {
+          "gt": "Open Pits [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 120.0,
+              "pred": 120,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.99,
+              "pred": 1.99,
+              "pass": true
+            },
+            "contained": {
+              "gt": 7.9,
+              "pred": 7.9,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Open Pits [Indicated] p17"
+        },
+        {
+          "gt": "Open Pits [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 120.0,
+              "pred": 120,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.99,
+              "pred": 1.99,
+              "pass": true
+            },
+            "contained": {
+              "gt": 7.9,
+              "pred": 7.9,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Open Pits [M&I] p17"
+        },
+        {
+          "gt": "Open Pits [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 42.0,
+              "pred": 42,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.2,
+              "pred": 1.2,
+              "pass": true
+            },
+            "contained": {
+              "gt": 1.7,
+              "pred": 1.7,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Open Pits [Inferred] p17"
+        },
+        {
+          "gt": "Carlin Stockpiles [Measured]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Measured",
+              "pred": "Measured",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 14.0,
+              "pred": 14,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.29,
+              "pred": 1.29,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.59,
+              "pred": 0.59,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Carlin Stockpiles [Measured] p17"
+        },
+        {
+          "gt": "Carlin Stockpiles [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 32.0,
+              "pred": 32,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.34,
+              "pred": 2.34,
+              "pass": true
+            },
+            "contained": {
+              "gt": 2.4,
+              "pred": 2.4,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Carlin Stockpiles [Indicated] p17"
+        },
+        {
+          "gt": "Carlin Stockpiles [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 47.0,
+              "pred": 47,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.02,
+              "pred": 2.02,
+              "pass": true
+            },
+            "contained": {
+              "gt": 3.0,
+              "pred": 3,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Carlin Stockpiles [M&I] p17"
+        },
+        {
+          "gt": "Carlin Stockpiles [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 4.5,
+              "pred": 4.5,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.9,
+              "pred": 1.9,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.27,
+              "pred": 0.27,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Carlin Stockpiles [Inferred] p17"
+        }
+      ]
+    },
+    {
+      "name": "barrick_p191_gt.json",
+      "kind": "same_source",
+      "human_review": false,
+      "source": "D:\\86177\\Documents\\ni43-101-adversarial\\data\\ground_truth\\barrick_p191_gt.json",
+      "summary": {
+        "gt_records": 42,
+        "matched": 42,
+        "field_total": 252,
+        "field_correct": 252,
+        "field_accuracy": 1.0,
+        "perfect_records": 42,
+        "skipped_aggregates": 0,
+        "per_field": {
+          "category": {
+            "scored": 42,
+            "correct": 42
+          },
+          "tonnes": {
+            "scored": 42,
+            "correct": 42
+          },
+          "grade": {
+            "scored": 42,
+            "correct": 42
+          },
+          "contained": {
+            "scored": 42,
+            "correct": 42
+          },
+          "unit": {
+            "scored": 42,
+            "correct": 42
+          },
+          "basis": {
+            "scored": 42,
+            "correct": 42
+          }
+        }
+      },
+      "unmatched_gt": [],
+      "extra_pred": [
+        "Gold Quarry [Indicated] p192",
+        "Gold Quarry [M&I] p192",
+        "Gold Quarry [Inferred] p192",
+        "Goldstar [Indicated] p192",
+        "Goldstar [M&I] p192",
+        "Goldstar [Inferred] p192",
+        "Goldstrike [Indicated] p192",
+        "Goldstrike [M&I] p192",
+        "Goldstrike [Inferred] p192",
+        "Green Lantern [Indicated] p192",
+        "Green Lantern [M&I] p192",
+        "Green Lantern [Inferred] p192",
+        "South Arturo OP [Indicated] p192",
+        "South Arturo OP [M&I] p192",
+        "South Arturo OP [Inferred] p192",
+        "Carlin Stockpiles Attrib. [Measured] p192",
+        "Carlin Stockpiles Attrib. [Indicated] p192",
+        "Carlin Stockpiles Attrib. [M&I] p192",
+        "Carlin Stockpiles Attrib. [Inferred] p192",
+        "Exodus [Indicated] p192",
+        "Exodus [M&I] p192",
+        "Exodus [Inferred] p192",
+        "Fallon [Inferred] p192",
+        "Goldstrike [Indicated] p192",
+        "Goldstrike [M&I] p192",
+        "Goldstrike [Inferred] p192",
+        "Leeville [Indicated] p192",
+        "Leeville [M&I] p192",
+        "Leeville [Inferred] p192",
+        "Pete Bajo [Indicated] p192",
+        "Pete Bajo [M&I] p192",
+        "Pete Bajo [Inferred] p192",
+        "Ren [Indicated] p192",
+        "Ren [M&I] p192",
+        "Ren [Inferred] p192",
+        "Rita K [Indicated] p192",
+        "Rita K [M&I] p192",
+        "Rita K [Inferred] p192",
+        "South Arturo UG [Measured] p192",
+        "South Arturo UG [Indicated] p192",
+        "South Arturo UG [M&I] p192",
+        "South Arturo UG [Inferred] p192",
+        "Open Pits [Indicated] p17",
+        "Open Pits [M&I] p17",
+        "Open Pits [Inferred] p17",
+        "Carlin Stockpiles [Measured] p17",
+        "Carlin Stockpiles [Indicated] p17",
+        "Carlin Stockpiles [M&I] p17",
+        "Carlin Stockpiles [Inferred] p17",
+        "Open Pits [Indicated] p154",
+        "Open Pits [M&I] p154",
+        "Open Pits [Inferred] p154",
+        "Carlin Stockpiles [Measured] p154",
+        "Carlin Stockpiles [Indicated] p154",
+        "Carlin Stockpiles [M&I] p154",
+        "Carlin Stockpiles [Inferred] p154"
+      ],
+      "details": [
+        {
+          "gt": "Gold Quarry [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 89.0,
+              "pred": 89,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.99,
+              "pred": 1.99,
+              "pass": true
+            },
+            "contained": {
+              "gt": 5.7,
+              "pred": 5.7,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Gold Quarry [Indicated] p191"
+        },
+        {
+          "gt": "Gold Quarry [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 89.0,
+              "pred": 89,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.99,
+              "pred": 1.99,
+              "pass": true
+            },
+            "contained": {
+              "gt": 5.7,
+              "pred": 5.7,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Gold Quarry [M&I] p191"
+        },
+        {
+          "gt": "Gold Quarry [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 36.0,
+              "pred": 36,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.2,
+              "pred": 1.2,
+              "pass": true
+            },
+            "contained": {
+              "gt": 1.4,
+              "pred": 1.4,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Gold Quarry [Inferred] p191"
+        },
+        {
+          "gt": "Goldstar [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 5.1,
+              "pred": 5.1,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.05,
+              "pred": 2.05,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.34,
+              "pred": 0.34,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstar [Indicated] p191"
+        },
+        {
+          "gt": "Goldstar [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 5.1,
+              "pred": 5.1,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.05,
+              "pred": 2.05,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.34,
+              "pred": 0.34,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstar [M&I] p191"
+        },
+        {
+          "gt": "Goldstar [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 1.6,
+              "pred": 1.6,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.6,
+              "pred": 1.6,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.083,
+              "pred": 0.083,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstar [Inferred] p191"
+        },
+        {
+          "gt": "Goldstrike [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 6.1,
+              "pred": 6.1,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.65,
+              "pred": 2.65,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.52,
+              "pred": 0.52,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstrike [Indicated] p191"
+        },
+        {
+          "gt": "Goldstrike [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 6.1,
+              "pred": 6.1,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.65,
+              "pred": 2.65,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.52,
+              "pred": 0.52,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstrike [M&I] p191"
+        },
+        {
+          "gt": "Goldstrike [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.47,
+              "pred": 0.47,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.7,
+              "pred": 1.7,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.025,
+              "pred": 0.025,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstrike [Inferred] p191"
+        },
+        {
+          "gt": "Green Lantern [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 13.0,
+              "pred": 13,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.31,
+              "pred": 1.31,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.54,
+              "pred": 0.54,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Green Lantern [Indicated] p191"
+        },
+        {
+          "gt": "Green Lantern [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 13.0,
+              "pred": 13,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.31,
+              "pred": 1.31,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.54,
+              "pred": 0.54,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Green Lantern [M&I] p191"
+        },
+        {
+          "gt": "Green Lantern [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 1.9,
+              "pred": 1.9,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.0,
+              "pred": 1.0,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.058,
+              "pred": 0.058,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Green Lantern [Inferred] p191"
+        },
+        {
+          "gt": "South Arturo OP [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 11.0,
+              "pred": 11,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.41,
+              "pred": 2.41,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.82,
+              "pred": 0.82,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "South Arturo OP [Indicated] p191"
+        },
+        {
+          "gt": "South Arturo OP [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 11.0,
+              "pred": 11,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.41,
+              "pred": 2.41,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.82,
+              "pred": 0.82,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "South Arturo OP [M&I] p191"
+        },
+        {
+          "gt": "South Arturo OP [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 1.8,
+              "pred": 1.8,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.8,
+              "pred": 2.8,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.17,
+              "pred": 0.17,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "South Arturo OP [Inferred] p191"
+        },
+        {
+          "gt": "Carlin Stockpiles [Measured]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Measured",
+              "pred": "Measured",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 14.0,
+              "pred": 14,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.29,
+              "pred": 1.29,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.59,
+              "pred": 0.59,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Carlin Stockpiles [Measured] p191"
+        },
+        {
+          "gt": "Carlin Stockpiles [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 32.0,
+              "pred": 32,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.34,
+              "pred": 2.34,
+              "pass": true
+            },
+            "contained": {
+              "gt": 2.4,
+              "pred": 2.4,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Carlin Stockpiles [Indicated] p191"
+        },
+        {
+          "gt": "Carlin Stockpiles [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 47.0,
+              "pred": 47,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.02,
+              "pred": 2.02,
+              "pass": true
+            },
+            "contained": {
+              "gt": 3.0,
+              "pred": 3,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Carlin Stockpiles [M&I] p191"
+        },
+        {
+          "gt": "Carlin Stockpiles [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 4.5,
+              "pred": 4.5,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.9,
+              "pred": 1.9,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.27,
+              "pred": 0.27,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Carlin Stockpiles [Inferred] p191"
+        },
+        {
+          "gt": "Exodus [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 5.6,
+              "pred": 5.6,
+              "pass": true
+            },
+            "grade": {
+              "gt": 4.49,
+              "pred": 4.49,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.81,
+              "pred": 0.81,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Exodus [Indicated] p191"
+        },
+        {
+          "gt": "Exodus [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 5.6,
+              "pred": 5.6,
+              "pass": true
+            },
+            "grade": {
+              "gt": 4.49,
+              "pred": 4.49,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.81,
+              "pred": 0.81,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Exodus [M&I] p191"
+        },
+        {
+          "gt": "Exodus [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.46,
+              "pred": 0.46,
+              "pass": true
+            },
+            "grade": {
+              "gt": 4.1,
+              "pred": 4.1,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.06,
+              "pred": 0.06,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Exodus [Inferred] p191"
+        },
+        {
+          "gt": "Fallon [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 6.6,
+              "pred": 6.6,
+              "pass": true
+            },
+            "grade": {
+              "gt": 8.2,
+              "pred": 8.2,
+              "pass": true
+            },
+            "contained": {
+              "gt": 1.8,
+              "pred": 1.8,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Fallon [Inferred] p191"
+        },
+        {
+          "gt": "Goldstrike [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 12.0,
+              "pred": 12,
+              "pass": true
+            },
+            "grade": {
+              "gt": 9.99,
+              "pred": 9.99,
+              "pass": true
+            },
+            "contained": {
+              "gt": 4.0,
+              "pred": 4.0,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstrike [Indicated] p191"
+        },
+        {
+          "gt": "Goldstrike [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 12.0,
+              "pred": 12,
+              "pass": true
+            },
+            "grade": {
+              "gt": 9.99,
+              "pred": 9.99,
+              "pass": true
+            },
+            "contained": {
+              "gt": 4.0,
+              "pred": 4.0,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstrike [M&I] p191"
+        },
+        {
+          "gt": "Goldstrike [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.81,
+              "pred": 0.81,
+              "pass": true
+            },
+            "grade": {
+              "gt": 9.6,
+              "pred": 9.6,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.25,
+              "pred": 0.25,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstrike [Inferred] p191"
+        },
+        {
+          "gt": "Leeville [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 28.0,
+              "pred": 28,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.82,
+              "pred": 7.82,
+              "pass": true
+            },
+            "contained": {
+              "gt": 7.0,
+              "pred": 7.0,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Leeville [Indicated] p191"
+        },
+        {
+          "gt": "Leeville [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 28.0,
+              "pred": 28,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.82,
+              "pred": 7.82,
+              "pass": true
+            },
+            "contained": {
+              "gt": 7.0,
+              "pred": 7.0,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Leeville [M&I] p191"
+        },
+        {
+          "gt": "Leeville [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 8.1,
+              "pred": 8.1,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.3,
+              "pred": 7.3,
+              "pass": true
+            },
+            "contained": {
+              "gt": 1.9,
+              "pred": 1.9,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Leeville [Inferred] p191"
+        },
+        {
+          "gt": "Pete Bajo [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 3.7,
+              "pred": 3.7,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.87,
+              "pred": 7.87,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.93,
+              "pred": 0.93,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Pete Bajo [Indicated] p191"
+        },
+        {
+          "gt": "Pete Bajo [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 3.7,
+              "pred": 3.7,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.87,
+              "pred": 7.87,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.93,
+              "pred": 0.93,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Pete Bajo [M&I] p191"
+        },
+        {
+          "gt": "Pete Bajo [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 1.8,
+              "pred": 1.8,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.4,
+              "pred": 7.4,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.42,
+              "pred": 0.42,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Pete Bajo [Inferred] p191"
+        },
+        {
+          "gt": "Ren [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.15,
+              "pred": 0.15,
+              "pass": true
+            },
+            "grade": {
+              "gt": 12.56,
+              "pred": 12.56,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.062,
+              "pred": 0.062,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Ren [Indicated] p191"
+        },
+        {
+          "gt": "Ren [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.15,
+              "pred": 0.15,
+              "pass": true
+            },
+            "grade": {
+              "gt": 12.56,
+              "pred": 12.56,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.062,
+              "pred": 0.062,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Ren [M&I] p191"
+        },
+        {
+          "gt": "Ren [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 6.9,
+              "pred": 6.9,
+              "pass": true
+            },
+            "grade": {
+              "gt": 6.9,
+              "pred": 6.9,
+              "pass": true
+            },
+            "contained": {
+              "gt": 1.5,
+              "pred": 1.5,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Ren [Inferred] p191"
+        },
+        {
+          "gt": "Rita K [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 4.4,
+              "pred": 4.4,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.01,
+              "pred": 7.01,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.99,
+              "pred": 0.99,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Rita K [Indicated] p191"
+        },
+        {
+          "gt": "Rita K [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 4.4,
+              "pred": 4.4,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.01,
+              "pred": 7.01,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.99,
+              "pred": 0.99,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Rita K [M&I] p191"
+        },
+        {
+          "gt": "Rita K [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 5.6,
+              "pred": 5.6,
+              "pass": true
+            },
+            "grade": {
+              "gt": 6.6,
+              "pred": 6.6,
+              "pass": true
+            },
+            "contained": {
+              "gt": 1.2,
+              "pred": 1.2,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Rita K [Inferred] p191"
+        },
+        {
+          "gt": "South Arturo UG [Measured]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Measured",
+              "pred": "Measured",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.14,
+              "pred": 0.14,
+              "pass": true
+            },
+            "grade": {
+              "gt": 8.55,
+              "pred": 8.55,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.038,
+              "pred": 0.038,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "South Arturo UG [Measured] p191"
+        },
+        {
+          "gt": "South Arturo UG [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.29,
+              "pred": 0.29,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.66,
+              "pred": 7.66,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.072,
+              "pred": 0.072,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "South Arturo UG [Indicated] p191"
+        },
+        {
+          "gt": "South Arturo UG [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.43,
+              "pred": 0.43,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.95,
+              "pred": 7.95,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.11,
+              "pred": 0.11,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "South Arturo UG [M&I] p191"
+        },
+        {
+          "gt": "South Arturo UG [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.93,
+              "pred": 0.93,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.7,
+              "pred": 7.7,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.23,
+              "pred": 0.23,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "100% Basis",
+              "pred": "100% Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "South Arturo UG [Inferred] p191"
+        }
+      ]
+    },
+    {
+      "name": "barrick_p192_gt.json",
+      "kind": "blind",
+      "human_review": true,
+      "source": "D:\\86177\\Documents\\ni43-101-adversarial\\data\\ground_truth\\barrick_p192_gt.json",
+      "summary": {
+        "gt_records": 42,
+        "matched": 42,
+        "field_total": 252,
+        "field_correct": 252,
+        "field_accuracy": 1.0,
+        "perfect_records": 42,
+        "skipped_aggregates": 0,
+        "per_field": {
+          "category": {
+            "scored": 42,
+            "correct": 42
+          },
+          "tonnes": {
+            "scored": 42,
+            "correct": 42
+          },
+          "grade": {
+            "scored": 42,
+            "correct": 42
+          },
+          "contained": {
+            "scored": 42,
+            "correct": 42
+          },
+          "unit": {
+            "scored": 42,
+            "correct": 42
+          },
+          "basis": {
+            "scored": 42,
+            "correct": 42
+          }
+        }
+      },
+      "unmatched_gt": [],
+      "extra_pred": [
+        "Gold Quarry [Indicated] p191",
+        "Gold Quarry [M&I] p191",
+        "Gold Quarry [Inferred] p191",
+        "Goldstar [Indicated] p191",
+        "Goldstar [M&I] p191",
+        "Goldstar [Inferred] p191",
+        "Goldstrike [Indicated] p191",
+        "Goldstrike [M&I] p191",
+        "Goldstrike [Inferred] p191",
+        "Green Lantern [Indicated] p191",
+        "Green Lantern [M&I] p191",
+        "Green Lantern [Inferred] p191",
+        "South Arturo OP [Indicated] p191",
+        "South Arturo OP [M&I] p191",
+        "South Arturo OP [Inferred] p191",
+        "Carlin Stockpiles [Measured] p191",
+        "Carlin Stockpiles [Indicated] p191",
+        "Carlin Stockpiles [M&I] p191",
+        "Carlin Stockpiles [Inferred] p191",
+        "Exodus [Indicated] p191",
+        "Exodus [M&I] p191",
+        "Exodus [Inferred] p191",
+        "Fallon [Inferred] p191",
+        "Goldstrike [Indicated] p191",
+        "Goldstrike [M&I] p191",
+        "Goldstrike [Inferred] p191",
+        "Leeville [Indicated] p191",
+        "Leeville [M&I] p191",
+        "Leeville [Inferred] p191",
+        "Pete Bajo [Indicated] p191",
+        "Pete Bajo [M&I] p191",
+        "Pete Bajo [Inferred] p191",
+        "Ren [Indicated] p191",
+        "Ren [M&I] p191",
+        "Ren [Inferred] p191",
+        "Rita K [Indicated] p191",
+        "Rita K [M&I] p191",
+        "Rita K [Inferred] p191",
+        "South Arturo UG [Measured] p191",
+        "South Arturo UG [Indicated] p191",
+        "South Arturo UG [M&I] p191",
+        "South Arturo UG [Inferred] p191",
+        "Open Pits [Indicated] p17",
+        "Open Pits [M&I] p17",
+        "Open Pits [Inferred] p17",
+        "Carlin Stockpiles [Measured] p17",
+        "Carlin Stockpiles [Indicated] p17",
+        "Carlin Stockpiles [M&I] p17",
+        "Carlin Stockpiles [Inferred] p17",
+        "Open Pits [Indicated] p154",
+        "Open Pits [M&I] p154",
+        "Open Pits [Inferred] p154",
+        "Carlin Stockpiles [Measured] p154",
+        "Carlin Stockpiles [Indicated] p154",
+        "Carlin Stockpiles [M&I] p154",
+        "Carlin Stockpiles [Inferred] p154"
+      ],
+      "details": [
+        {
+          "gt": "Gold Quarry [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 55.0,
+              "pred": 55,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.99,
+              "pred": 1.99,
+              "pass": true
+            },
+            "contained": {
+              "gt": 3.5,
+              "pred": 3.5,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Gold Quarry [Indicated] p192"
+        },
+        {
+          "gt": "Gold Quarry [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 55.0,
+              "pred": 55,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.99,
+              "pred": 1.99,
+              "pass": true
+            },
+            "contained": {
+              "gt": 3.5,
+              "pred": 3.5,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Gold Quarry [M&I] p192"
+        },
+        {
+          "gt": "Gold Quarry [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 22.0,
+              "pred": 22,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.2,
+              "pred": 1.2,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.86,
+              "pred": 0.86,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Gold Quarry [Inferred] p192"
+        },
+        {
+          "gt": "Goldstar [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 3.1,
+              "pred": 3.1,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.05,
+              "pred": 2.05,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.21,
+              "pred": 0.21,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstar [Indicated] p192"
+        },
+        {
+          "gt": "Goldstar [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 3.1,
+              "pred": 3.1,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.05,
+              "pred": 2.05,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.21,
+              "pred": 0.21,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstar [M&I] p192"
+        },
+        {
+          "gt": "Goldstar [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.98,
+              "pred": 0.98,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.6,
+              "pred": 1.6,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.051,
+              "pred": 0.051,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstar [Inferred] p192"
+        },
+        {
+          "gt": "Goldstrike [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 3.8,
+              "pred": 3.8,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.65,
+              "pred": 2.65,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.32,
+              "pred": 0.32,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstrike [Indicated] p192"
+        },
+        {
+          "gt": "Goldstrike [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 3.8,
+              "pred": 3.8,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.65,
+              "pred": 2.65,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.32,
+              "pred": 0.32,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstrike [M&I] p192"
+        },
+        {
+          "gt": "Goldstrike [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.29,
+              "pred": 0.29,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.7,
+              "pred": 1.7,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.015,
+              "pred": 0.015,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstrike [Inferred] p192"
+        },
+        {
+          "gt": "Green Lantern [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 8.0,
+              "pred": 8.0,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.31,
+              "pred": 1.31,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.33,
+              "pred": 0.33,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Green Lantern [Indicated] p192"
+        },
+        {
+          "gt": "Green Lantern [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 8.0,
+              "pred": 8.0,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.31,
+              "pred": 1.31,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.33,
+              "pred": 0.33,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Green Lantern [M&I] p192"
+        },
+        {
+          "gt": "Green Lantern [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 1.2,
+              "pred": 1.2,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.0,
+              "pred": 1.0,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.036,
+              "pred": 0.036,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Green Lantern [Inferred] p192"
+        },
+        {
+          "gt": "South Arturo OP [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 6.8,
+              "pred": 6.8,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.41,
+              "pred": 2.41,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.5,
+              "pred": 0.5,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "South Arturo OP [Indicated] p192"
+        },
+        {
+          "gt": "South Arturo OP [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 6.8,
+              "pred": 6.8,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.41,
+              "pred": 2.41,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.5,
+              "pred": 0.5,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "South Arturo OP [M&I] p192"
+        },
+        {
+          "gt": "South Arturo OP [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 1.1,
+              "pred": 1.1,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.8,
+              "pred": 2.8,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.1,
+              "pred": 0.1,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "South Arturo OP [Inferred] p192"
+        },
+        {
+          "gt": "Carlin Stockpiles [Measured]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Measured",
+              "pred": "Measured",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 8.6,
+              "pred": 8.6,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.29,
+              "pred": 1.29,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.36,
+              "pred": 0.36,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Carlin Stockpiles Attrib. [Measured] p192"
+        },
+        {
+          "gt": "Carlin Stockpiles [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 20.0,
+              "pred": 20,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.34,
+              "pred": 2.34,
+              "pass": true
+            },
+            "contained": {
+              "gt": 1.5,
+              "pred": 1.5,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Carlin Stockpiles Attrib. [Indicated] p192"
+        },
+        {
+          "gt": "Carlin Stockpiles [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 29.0,
+              "pred": 29,
+              "pass": true
+            },
+            "grade": {
+              "gt": 2.02,
+              "pred": 2.02,
+              "pass": true
+            },
+            "contained": {
+              "gt": 1.8,
+              "pred": 1.8,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Carlin Stockpiles Attrib. [M&I] p192"
+        },
+        {
+          "gt": "Carlin Stockpiles [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 2.8,
+              "pred": 2.8,
+              "pass": true
+            },
+            "grade": {
+              "gt": 1.9,
+              "pred": 1.9,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.17,
+              "pred": 0.17,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Carlin Stockpiles Attrib. [Inferred] p192"
+        },
+        {
+          "gt": "Exodus [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 3.4,
+              "pred": 3.4,
+              "pass": true
+            },
+            "grade": {
+              "gt": 4.49,
+              "pred": 4.49,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.5,
+              "pred": 0.5,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Exodus [Indicated] p192"
+        },
+        {
+          "gt": "Exodus [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 3.4,
+              "pred": 3.4,
+              "pass": true
+            },
+            "grade": {
+              "gt": 4.49,
+              "pred": 4.49,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.5,
+              "pred": 0.5,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Exodus [M&I] p192"
+        },
+        {
+          "gt": "Exodus [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.28,
+              "pred": 0.28,
+              "pass": true
+            },
+            "grade": {
+              "gt": 4.1,
+              "pred": 4.1,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.037,
+              "pred": 0.037,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Exodus [Inferred] p192"
+        },
+        {
+          "gt": "Fallon [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 4.1,
+              "pred": 4.1,
+              "pass": true
+            },
+            "grade": {
+              "gt": 8.2,
+              "pred": 8.2,
+              "pass": true
+            },
+            "contained": {
+              "gt": 1.1,
+              "pred": 1.1,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Fallon [Inferred] p192"
+        },
+        {
+          "gt": "Goldstrike [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 7.4,
+              "pred": 7.4,
+              "pass": true
+            },
+            "grade": {
+              "gt": 9.99,
+              "pred": 9.99,
+              "pass": true
+            },
+            "contained": {
+              "gt": 2.5,
+              "pred": 2.5,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstrike [Indicated] p192"
+        },
+        {
+          "gt": "Goldstrike [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 7.4,
+              "pred": 7.4,
+              "pass": true
+            },
+            "grade": {
+              "gt": 9.99,
+              "pred": 9.99,
+              "pass": true
+            },
+            "contained": {
+              "gt": 2.5,
+              "pred": 2.5,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstrike [M&I] p192"
+        },
+        {
+          "gt": "Goldstrike [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.5,
+              "pred": 0.5,
+              "pass": true
+            },
+            "grade": {
+              "gt": 9.6,
+              "pred": 9.6,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.15,
+              "pred": 0.15,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Goldstrike [Inferred] p192"
+        },
+        {
+          "gt": "Leeville [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 17.0,
+              "pred": 17,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.82,
+              "pred": 7.82,
+              "pass": true
+            },
+            "contained": {
+              "gt": 4.0,
+              "pred": 4.0,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Leeville [Indicated] p192"
+        },
+        {
+          "gt": "Leeville [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 17.0,
+              "pred": 17,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.82,
+              "pred": 7.82,
+              "pass": true
+            },
+            "contained": {
+              "gt": 4.3,
+              "pred": 4.3,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Leeville [M&I] p192"
+        },
+        {
+          "gt": "Leeville [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 5.0,
+              "pred": 5.0,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.3,
+              "pred": 7.3,
+              "pass": true
+            },
+            "contained": {
+              "gt": 1.2,
+              "pred": 1.2,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Leeville [Inferred] p192"
+        },
+        {
+          "gt": "Pete Bajo [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 2.3,
+              "pred": 2.3,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.87,
+              "pred": 7.87,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.57,
+              "pred": 0.57,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Pete Bajo [Indicated] p192"
+        },
+        {
+          "gt": "Pete Bajo [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 2.3,
+              "pred": 2.3,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.87,
+              "pred": 7.87,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.57,
+              "pred": 0.57,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Pete Bajo [M&I] p192"
+        },
+        {
+          "gt": "Pete Bajo [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 1.1,
+              "pred": 1.1,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.4,
+              "pred": 7.4,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.26,
+              "pred": 0.26,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Pete Bajo [Inferred] p192"
+        },
+        {
+          "gt": "Ren [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.092,
+              "pred": 0.092,
+              "pass": true
+            },
+            "grade": {
+              "gt": 12.56,
+              "pred": 12.56,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.038,
+              "pred": 0.038,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Ren [Indicated] p192"
+        },
+        {
+          "gt": "Ren [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.092,
+              "pred": 0.092,
+              "pass": true
+            },
+            "grade": {
+              "gt": 12.56,
+              "pred": 12.56,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.038,
+              "pred": 0.038,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Ren [M&I] p192"
+        },
+        {
+          "gt": "Ren [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 4.2,
+              "pred": 4.2,
+              "pass": true
+            },
+            "grade": {
+              "gt": 6.9,
+              "pred": 6.9,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.92,
+              "pred": 0.92,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Ren [Inferred] p192"
+        },
+        {
+          "gt": "Rita K [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 2.7,
+              "pred": 2.7,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.01,
+              "pred": 7.01,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.61,
+              "pred": 0.61,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Rita K [Indicated] p192"
+        },
+        {
+          "gt": "Rita K [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 2.7,
+              "pred": 2.7,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.01,
+              "pred": 7.01,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.61,
+              "pred": 0.61,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Rita K [M&I] p192"
+        },
+        {
+          "gt": "Rita K [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 3.4,
+              "pred": 3.4,
+              "pass": true
+            },
+            "grade": {
+              "gt": 6.6,
+              "pred": 6.6,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.74,
+              "pred": 0.74,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "Rita K [Inferred] p192"
+        },
+        {
+          "gt": "South Arturo UG [Measured]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Measured",
+              "pred": "Measured",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.086,
+              "pred": 0.086,
+              "pass": true
+            },
+            "grade": {
+              "gt": 8.55,
+              "pred": 8.55,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.023,
+              "pred": 0.023,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "South Arturo UG [Measured] p192"
+        },
+        {
+          "gt": "South Arturo UG [Indicated]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Indicated",
+              "pred": "Indicated",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.18,
+              "pred": 0.18,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.66,
+              "pred": 7.66,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.044,
+              "pred": 0.044,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "South Arturo UG [Indicated] p192"
+        },
+        {
+          "gt": "South Arturo UG [M&I]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "M&I",
+              "pred": "M&I",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.26,
+              "pred": 0.26,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.95,
+              "pred": 7.95,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.068,
+              "pred": 0.068,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "South Arturo UG [M&I] p192"
+        },
+        {
+          "gt": "South Arturo UG [Inferred]",
+          "matched": true,
+          "fields": {
+            "category": {
+              "gt": "Inferred",
+              "pred": "Inferred",
+              "pass": true
+            },
+            "tonnes": {
+              "gt": 0.57,
+              "pred": 0.57,
+              "pass": true
+            },
+            "grade": {
+              "gt": 7.7,
+              "pred": 7.7,
+              "pass": true
+            },
+            "contained": {
+              "gt": 0.14,
+              "pred": 0.14,
+              "pass": true
+            },
+            "unit": {
+              "gt": null,
+              "pred": null,
+              "pass": true
+            },
+            "basis": {
+              "gt": "Barrick Attributable Basis",
+              "pred": "Barrick Attributable Basis",
+              "pass": true
+            }
+          },
+          "all_pass": true,
+          "pred": "South Arturo UG [Inferred] p192"
+        }
+      ]
+    }
+  ],
+  "combined": {
+    "gt_records": 91,
+    "matched": 91,
+    "field_total": 546,
+    "field_correct": 546,
+    "perfect_records": 91,
+    "skipped_aggregates": 0,
+    "per_field": {
+      "category": {
+        "scored": 91,
+        "correct": 91
+      },
+      "tonnes": {
+        "scored": 91,
+        "correct": 91
+      },
+      "grade": {
+        "scored": 91,
+        "correct": 91
+      },
+      "contained": {
+        "scored": 91,
+        "correct": 91
+      },
+      "unit": {
+        "scored": 91,
+        "correct": 91
+      },
+      "basis": {
+        "scored": 91,
+        "correct": 91
+      }
+    },
+    "label": "全部",
+    "field_accuracy": 1.0
+  },
+  "blind": {
     "gt_records": 42,
     "matched": 42,
     "field_total": 252,
     "field_correct": 252,
-    "field_accuracy": 1.0,
     "perfect_records": 42,
     "skipped_aggregates": 0,
     "per_field": {
@@ -52,1663 +3889,83 @@
         "scored": 42,
         "correct": 42
       }
-    }
+    },
+    "label": "盲测集",
+    "field_accuracy": 1.0
+  },
+  "same_source": {
+    "gt_records": 49,
+    "matched": 49,
+    "field_total": 294,
+    "field_correct": 294,
+    "perfect_records": 49,
+    "skipped_aggregates": 0,
+    "per_field": {
+      "category": {
+        "scored": 49,
+        "correct": 49
+      },
+      "tonnes": {
+        "scored": 49,
+        "correct": 49
+      },
+      "grade": {
+        "scored": 49,
+        "correct": 49
+      },
+      "contained": {
+        "scored": 49,
+        "correct": 49
+      },
+      "unit": {
+        "scored": 49,
+        "correct": 49
+      },
+      "basis": {
+        "scored": 49,
+        "correct": 49
+      }
+    },
+    "label": "同源集",
+    "field_accuracy": 1.0
+  },
+  "summary": {
+    "gt_records": 42,
+    "matched": 42,
+    "field_total": 252,
+    "field_correct": 252,
+    "perfect_records": 42,
+    "skipped_aggregates": 0,
+    "per_field": {
+      "category": {
+        "scored": 42,
+        "correct": 42
+      },
+      "tonnes": {
+        "scored": 42,
+        "correct": 42
+      },
+      "grade": {
+        "scored": 42,
+        "correct": 42
+      },
+      "contained": {
+        "scored": 42,
+        "correct": 42
+      },
+      "unit": {
+        "scored": 42,
+        "correct": 42
+      },
+      "basis": {
+        "scored": 42,
+        "correct": 42
+      }
+    },
+    "label": "盲测集",
+    "field_accuracy": 1.0
   },
   "unmatched_gt": [],
-  "extra_pred": [
-    "Gold Quarry [Indicated] p191",
-    "Gold Quarry [M&I] p191",
-    "Gold Quarry [Inferred] p191",
-    "Goldstar [Indicated] p191",
-    "Goldstar [M&I] p191",
-    "Goldstar [Inferred] p191",
-    "Goldstrike [Indicated] p191",
-    "Goldstrike [M&I] p191",
-    "Goldstrike [Inferred] p191",
-    "Green Lantern [Indicated] p191",
-    "Green Lantern [M&I] p191",
-    "Green Lantern [Inferred] p191",
-    "South Arturo OP [Indicated] p191",
-    "South Arturo OP [M&I] p191",
-    "South Arturo OP [Inferred] p191",
-    "Carlin Stockpiles [Measured] p191",
-    "Carlin Stockpiles [Indicated] p191",
-    "Carlin Stockpiles [M&I] p191",
-    "Carlin Stockpiles [Inferred] p191",
-    "Exodus [Indicated] p191",
-    "Exodus [M&I] p191",
-    "Exodus [Inferred] p191",
-    "Fallon [Inferred] p191",
-    "Goldstrike [Indicated] p191",
-    "Goldstrike [M&I] p191",
-    "Goldstrike [Inferred] p191",
-    "Leeville [Indicated] p191",
-    "Leeville [M&I] p191",
-    "Leeville [Inferred] p191",
-    "Pete Bajo [Indicated] p191",
-    "Pete Bajo [M&I] p191",
-    "Pete Bajo [Inferred] p191",
-    "Ren [Indicated] p191",
-    "Ren [M&I] p191",
-    "Ren [Inferred] p191",
-    "Rita K [Indicated] p191",
-    "Rita K [M&I] p191",
-    "Rita K [Inferred] p191",
-    "South Arturo UG [Measured] p191",
-    "South Arturo UG [Indicated] p191",
-    "South Arturo UG [M&I] p191",
-    "South Arturo UG [Inferred] p191",
-    "Open Pits [Indicated] p17",
-    "Open Pits [M&I] p17",
-    "Open Pits [Inferred] p17",
-    "Carlin Stockpiles [Measured] p17",
-    "Carlin Stockpiles [Indicated] p17",
-    "Carlin Stockpiles [M&I] p17",
-    "Carlin Stockpiles [Inferred] p17",
-    "Open Pits [Indicated] p154",
-    "Open Pits [M&I] p154",
-    "Open Pits [Inferred] p154",
-    "Carlin Stockpiles [Measured] p154",
-    "Carlin Stockpiles [Indicated] p154",
-    "Carlin Stockpiles [M&I] p154",
-    "Carlin Stockpiles [Inferred] p154"
-  ],
-  "details": [
-    {
-      "gt": "Gold Quarry [Indicated]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Indicated",
-          "pred": "Indicated",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 55.0,
-          "pred": 55,
-          "pass": true
-        },
-        "grade": {
-          "gt": 1.99,
-          "pred": 1.99,
-          "pass": true
-        },
-        "contained": {
-          "gt": 3.5,
-          "pred": 3.5,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Gold Quarry [Indicated] p192"
-    },
-    {
-      "gt": "Gold Quarry [M&I]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "M&I",
-          "pred": "M&I",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 55.0,
-          "pred": 55,
-          "pass": true
-        },
-        "grade": {
-          "gt": 1.99,
-          "pred": 1.99,
-          "pass": true
-        },
-        "contained": {
-          "gt": 3.5,
-          "pred": 3.5,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Gold Quarry [M&I] p192"
-    },
-    {
-      "gt": "Gold Quarry [Inferred]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Inferred",
-          "pred": "Inferred",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 22.0,
-          "pred": 22,
-          "pass": true
-        },
-        "grade": {
-          "gt": 1.2,
-          "pred": 1.2,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.86,
-          "pred": 0.86,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Gold Quarry [Inferred] p192"
-    },
-    {
-      "gt": "Goldstar [Indicated]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Indicated",
-          "pred": "Indicated",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 3.1,
-          "pred": 3.1,
-          "pass": true
-        },
-        "grade": {
-          "gt": 2.05,
-          "pred": 2.05,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.21,
-          "pred": 0.21,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Goldstar [Indicated] p192"
-    },
-    {
-      "gt": "Goldstar [M&I]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "M&I",
-          "pred": "M&I",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 3.1,
-          "pred": 3.1,
-          "pass": true
-        },
-        "grade": {
-          "gt": 2.05,
-          "pred": 2.05,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.21,
-          "pred": 0.21,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Goldstar [M&I] p192"
-    },
-    {
-      "gt": "Goldstar [Inferred]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Inferred",
-          "pred": "Inferred",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 0.98,
-          "pred": 0.98,
-          "pass": true
-        },
-        "grade": {
-          "gt": 1.6,
-          "pred": 1.6,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.051,
-          "pred": 0.051,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Goldstar [Inferred] p192"
-    },
-    {
-      "gt": "Goldstrike [Indicated]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Indicated",
-          "pred": "Indicated",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 3.8,
-          "pred": 3.8,
-          "pass": true
-        },
-        "grade": {
-          "gt": 2.65,
-          "pred": 2.65,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.32,
-          "pred": 0.32,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Goldstrike [Indicated] p192"
-    },
-    {
-      "gt": "Goldstrike [M&I]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "M&I",
-          "pred": "M&I",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 3.8,
-          "pred": 3.8,
-          "pass": true
-        },
-        "grade": {
-          "gt": 2.65,
-          "pred": 2.65,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.32,
-          "pred": 0.32,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Goldstrike [M&I] p192"
-    },
-    {
-      "gt": "Goldstrike [Inferred]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Inferred",
-          "pred": "Inferred",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 0.29,
-          "pred": 0.29,
-          "pass": true
-        },
-        "grade": {
-          "gt": 1.7,
-          "pred": 1.7,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.015,
-          "pred": 0.015,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Goldstrike [Inferred] p192"
-    },
-    {
-      "gt": "Green Lantern [Indicated]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Indicated",
-          "pred": "Indicated",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 8.0,
-          "pred": 8.0,
-          "pass": true
-        },
-        "grade": {
-          "gt": 1.31,
-          "pred": 1.31,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.33,
-          "pred": 0.33,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Green Lantern [Indicated] p192"
-    },
-    {
-      "gt": "Green Lantern [M&I]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "M&I",
-          "pred": "M&I",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 8.0,
-          "pred": 8.0,
-          "pass": true
-        },
-        "grade": {
-          "gt": 1.31,
-          "pred": 1.31,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.33,
-          "pred": 0.33,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Green Lantern [M&I] p192"
-    },
-    {
-      "gt": "Green Lantern [Inferred]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Inferred",
-          "pred": "Inferred",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 1.2,
-          "pred": 1.2,
-          "pass": true
-        },
-        "grade": {
-          "gt": 1.0,
-          "pred": 1.0,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.036,
-          "pred": 0.036,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Green Lantern [Inferred] p192"
-    },
-    {
-      "gt": "South Arturo OP [Indicated]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Indicated",
-          "pred": "Indicated",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 6.8,
-          "pred": 6.8,
-          "pass": true
-        },
-        "grade": {
-          "gt": 2.41,
-          "pred": 2.41,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.5,
-          "pred": 0.5,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "South Arturo OP [Indicated] p192"
-    },
-    {
-      "gt": "South Arturo OP [M&I]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "M&I",
-          "pred": "M&I",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 6.8,
-          "pred": 6.8,
-          "pass": true
-        },
-        "grade": {
-          "gt": 2.41,
-          "pred": 2.41,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.5,
-          "pred": 0.5,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "South Arturo OP [M&I] p192"
-    },
-    {
-      "gt": "South Arturo OP [Inferred]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Inferred",
-          "pred": "Inferred",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 1.1,
-          "pred": 1.1,
-          "pass": true
-        },
-        "grade": {
-          "gt": 2.8,
-          "pred": 2.8,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.1,
-          "pred": 0.1,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "South Arturo OP [Inferred] p192"
-    },
-    {
-      "gt": "Carlin Stockpiles [Measured]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Measured",
-          "pred": "Measured",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 8.6,
-          "pred": 8.6,
-          "pass": true
-        },
-        "grade": {
-          "gt": 1.29,
-          "pred": 1.29,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.36,
-          "pred": 0.36,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Carlin Stockpiles Attrib. [Measured] p192"
-    },
-    {
-      "gt": "Carlin Stockpiles [Indicated]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Indicated",
-          "pred": "Indicated",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 20.0,
-          "pred": 20,
-          "pass": true
-        },
-        "grade": {
-          "gt": 2.34,
-          "pred": 2.34,
-          "pass": true
-        },
-        "contained": {
-          "gt": 1.5,
-          "pred": 1.5,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Carlin Stockpiles Attrib. [Indicated] p192"
-    },
-    {
-      "gt": "Carlin Stockpiles [M&I]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "M&I",
-          "pred": "M&I",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 29.0,
-          "pred": 29,
-          "pass": true
-        },
-        "grade": {
-          "gt": 2.02,
-          "pred": 2.02,
-          "pass": true
-        },
-        "contained": {
-          "gt": 1.8,
-          "pred": 1.8,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Carlin Stockpiles Attrib. [M&I] p192"
-    },
-    {
-      "gt": "Carlin Stockpiles [Inferred]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Inferred",
-          "pred": "Inferred",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 2.8,
-          "pred": 2.8,
-          "pass": true
-        },
-        "grade": {
-          "gt": 1.9,
-          "pred": 1.9,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.17,
-          "pred": 0.17,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Carlin Stockpiles Attrib. [Inferred] p192"
-    },
-    {
-      "gt": "Exodus [Indicated]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Indicated",
-          "pred": "Indicated",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 3.4,
-          "pred": 3.4,
-          "pass": true
-        },
-        "grade": {
-          "gt": 4.49,
-          "pred": 4.49,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.5,
-          "pred": 0.5,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Exodus [Indicated] p192"
-    },
-    {
-      "gt": "Exodus [M&I]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "M&I",
-          "pred": "M&I",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 3.4,
-          "pred": 3.4,
-          "pass": true
-        },
-        "grade": {
-          "gt": 4.49,
-          "pred": 4.49,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.5,
-          "pred": 0.5,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Exodus [M&I] p192"
-    },
-    {
-      "gt": "Exodus [Inferred]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Inferred",
-          "pred": "Inferred",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 0.28,
-          "pred": 0.28,
-          "pass": true
-        },
-        "grade": {
-          "gt": 4.1,
-          "pred": 4.1,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.037,
-          "pred": 0.037,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Exodus [Inferred] p192"
-    },
-    {
-      "gt": "Fallon [Inferred]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Inferred",
-          "pred": "Inferred",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 4.1,
-          "pred": 4.1,
-          "pass": true
-        },
-        "grade": {
-          "gt": 8.2,
-          "pred": 8.2,
-          "pass": true
-        },
-        "contained": {
-          "gt": 1.1,
-          "pred": 1.1,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Fallon [Inferred] p192"
-    },
-    {
-      "gt": "Goldstrike [Indicated]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Indicated",
-          "pred": "Indicated",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 7.4,
-          "pred": 7.4,
-          "pass": true
-        },
-        "grade": {
-          "gt": 9.99,
-          "pred": 9.99,
-          "pass": true
-        },
-        "contained": {
-          "gt": 2.5,
-          "pred": 2.5,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Goldstrike [Indicated] p192"
-    },
-    {
-      "gt": "Goldstrike [M&I]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "M&I",
-          "pred": "M&I",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 7.4,
-          "pred": 7.4,
-          "pass": true
-        },
-        "grade": {
-          "gt": 9.99,
-          "pred": 9.99,
-          "pass": true
-        },
-        "contained": {
-          "gt": 2.5,
-          "pred": 2.5,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Goldstrike [M&I] p192"
-    },
-    {
-      "gt": "Goldstrike [Inferred]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Inferred",
-          "pred": "Inferred",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 0.5,
-          "pred": 0.5,
-          "pass": true
-        },
-        "grade": {
-          "gt": 9.6,
-          "pred": 9.6,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.15,
-          "pred": 0.15,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Goldstrike [Inferred] p192"
-    },
-    {
-      "gt": "Leeville [Indicated]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Indicated",
-          "pred": "Indicated",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 17.0,
-          "pred": 17,
-          "pass": true
-        },
-        "grade": {
-          "gt": 7.82,
-          "pred": 7.82,
-          "pass": true
-        },
-        "contained": {
-          "gt": 4.0,
-          "pred": 4.0,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Leeville [Indicated] p192"
-    },
-    {
-      "gt": "Leeville [M&I]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "M&I",
-          "pred": "M&I",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 17.0,
-          "pred": 17,
-          "pass": true
-        },
-        "grade": {
-          "gt": 7.82,
-          "pred": 7.82,
-          "pass": true
-        },
-        "contained": {
-          "gt": 4.3,
-          "pred": 4.3,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Leeville [M&I] p192"
-    },
-    {
-      "gt": "Leeville [Inferred]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Inferred",
-          "pred": "Inferred",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 5.0,
-          "pred": 5.0,
-          "pass": true
-        },
-        "grade": {
-          "gt": 7.3,
-          "pred": 7.3,
-          "pass": true
-        },
-        "contained": {
-          "gt": 1.2,
-          "pred": 1.2,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Leeville [Inferred] p192"
-    },
-    {
-      "gt": "Pete Bajo [Indicated]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Indicated",
-          "pred": "Indicated",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 2.3,
-          "pred": 2.3,
-          "pass": true
-        },
-        "grade": {
-          "gt": 7.87,
-          "pred": 7.87,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.57,
-          "pred": 0.57,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Pete Bajo [Indicated] p192"
-    },
-    {
-      "gt": "Pete Bajo [M&I]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "M&I",
-          "pred": "M&I",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 2.3,
-          "pred": 2.3,
-          "pass": true
-        },
-        "grade": {
-          "gt": 7.87,
-          "pred": 7.87,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.57,
-          "pred": 0.57,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Pete Bajo [M&I] p192"
-    },
-    {
-      "gt": "Pete Bajo [Inferred]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Inferred",
-          "pred": "Inferred",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 1.1,
-          "pred": 1.1,
-          "pass": true
-        },
-        "grade": {
-          "gt": 7.4,
-          "pred": 7.4,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.26,
-          "pred": 0.26,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Pete Bajo [Inferred] p192"
-    },
-    {
-      "gt": "Ren [Indicated]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Indicated",
-          "pred": "Indicated",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 0.092,
-          "pred": 0.092,
-          "pass": true
-        },
-        "grade": {
-          "gt": 12.56,
-          "pred": 12.56,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.038,
-          "pred": 0.038,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Ren [Indicated] p192"
-    },
-    {
-      "gt": "Ren [M&I]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "M&I",
-          "pred": "M&I",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 0.092,
-          "pred": 0.092,
-          "pass": true
-        },
-        "grade": {
-          "gt": 12.56,
-          "pred": 12.56,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.038,
-          "pred": 0.038,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Ren [M&I] p192"
-    },
-    {
-      "gt": "Ren [Inferred]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Inferred",
-          "pred": "Inferred",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 4.2,
-          "pred": 4.2,
-          "pass": true
-        },
-        "grade": {
-          "gt": 6.9,
-          "pred": 6.9,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.92,
-          "pred": 0.92,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Ren [Inferred] p192"
-    },
-    {
-      "gt": "Rita K [Indicated]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Indicated",
-          "pred": "Indicated",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 2.7,
-          "pred": 2.7,
-          "pass": true
-        },
-        "grade": {
-          "gt": 7.01,
-          "pred": 7.01,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.61,
-          "pred": 0.61,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Rita K [Indicated] p192"
-    },
-    {
-      "gt": "Rita K [M&I]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "M&I",
-          "pred": "M&I",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 2.7,
-          "pred": 2.7,
-          "pass": true
-        },
-        "grade": {
-          "gt": 7.01,
-          "pred": 7.01,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.61,
-          "pred": 0.61,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Rita K [M&I] p192"
-    },
-    {
-      "gt": "Rita K [Inferred]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Inferred",
-          "pred": "Inferred",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 3.4,
-          "pred": 3.4,
-          "pass": true
-        },
-        "grade": {
-          "gt": 6.6,
-          "pred": 6.6,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.74,
-          "pred": 0.74,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "Rita K [Inferred] p192"
-    },
-    {
-      "gt": "South Arturo UG [Measured]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Measured",
-          "pred": "Measured",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 0.086,
-          "pred": 0.086,
-          "pass": true
-        },
-        "grade": {
-          "gt": 8.55,
-          "pred": 8.55,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.023,
-          "pred": 0.023,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "South Arturo UG [Measured] p192"
-    },
-    {
-      "gt": "South Arturo UG [Indicated]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Indicated",
-          "pred": "Indicated",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 0.18,
-          "pred": 0.18,
-          "pass": true
-        },
-        "grade": {
-          "gt": 7.66,
-          "pred": 7.66,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.044,
-          "pred": 0.044,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "South Arturo UG [Indicated] p192"
-    },
-    {
-      "gt": "South Arturo UG [M&I]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "M&I",
-          "pred": "M&I",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 0.26,
-          "pred": 0.26,
-          "pass": true
-        },
-        "grade": {
-          "gt": 7.95,
-          "pred": 7.95,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.068,
-          "pred": 0.068,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "South Arturo UG [M&I] p192"
-    },
-    {
-      "gt": "South Arturo UG [Inferred]",
-      "matched": true,
-      "fields": {
-        "category": {
-          "gt": "Inferred",
-          "pred": "Inferred",
-          "pass": true
-        },
-        "tonnes": {
-          "gt": 0.57,
-          "pred": 0.57,
-          "pass": true
-        },
-        "grade": {
-          "gt": 7.7,
-          "pred": 7.7,
-          "pass": true
-        },
-        "contained": {
-          "gt": 0.14,
-          "pred": 0.14,
-          "pass": true
-        },
-        "unit": {
-          "gt": null,
-          "pred": null,
-          "pass": true
-        },
-        "basis": {
-          "gt": "Barrick Attributable Basis",
-          "pred": "Barrick Attributable Basis",
-          "pass": true
-        }
-      },
-      "all_pass": true,
-      "pred": "South Arturo UG [Inferred] p192"
-    }
-  ]
+  "extra_pred": [],
+  "details": []
 }

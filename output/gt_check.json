@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-10-18 02:48:15",
+  "pages": "data\\processed\\barrick.pages.jsonl",
+  "pass": true,
+  "sets": [
+    {
+      "name": "barrick_p17_gt.json",
+      "kind": "same_source",
+      "human_review": true,
+      "records": 7,
+      "passed": 7,
+      "failed": 0,
+      "failures": [],
+      "match_modes": {
+        "line": 3,
+        "near": 4,
+        "page": 0
+      },
+      "warning": "This page reports the same deposits as the few-shot example (page 191 Table 14-21), so these numbers are partly present in the extractor prompt. Use barrick_p192_gt.json for leak-free capability evidence."
+    },
+    {
+      "name": "barrick_p191_gt.json",
+      "kind": "same_source",
+      "human_review": false,
+      "records": 42,
+      "passed": 42,
+      "failed": 0,
+      "failures": [],
+      "match_modes": {
+        "line": 42,
+        "near": 0,
+        "page": 0
+      },
+      "warning": "few-shot 取自本页 -> 本 GT 与提示词同源。只能用于一致性/回归, 不得计入盲测能力证据; 盲测证据只看 p192。"
+    },
+    {
+      "name": "barrick_p192_gt.json",
+      "kind": "blind",
+      "human_review": true,
+      "records": 42,
+      "passed": 42,
+      "failed": 0,
+      "failures": [],
+      "match_modes": {
+        "line": 42,
+        "near": 0,
+        "page": 0
+      },
+      "warning": null
+    }
+  ]
+}

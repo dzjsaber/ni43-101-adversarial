@@ -57,7 +57,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
   <h1>NI 43-101 对抗式资源量抽取 · 运行报告</h1>
   <div class="sub">DeepSeek 抽取 + GLM 审计 + 确定性代码终审 —— 放行权不交给任何模型</div>
   <div class="meta">
-    <div>生成时间 <b>2026-10-17 03:29:46</b></div>
+    <div>生成时间 <b>2026-10-18 02:48:17</b></div>
     <div>报告 <b>barrick.pdf</b></div>
     <div>数据源 <b>data/processed/*.jsonl + output/*.json</b></div>
   </div>
@@ -271,7 +271,8 @@ mining recovery and dilution, processing recovery, and other input factors.
      对账与 src/evaluate.py 共用同一份匹配代码, 不存在两套口径。</p>
   
   <div class="gtblock">
-    <h3>barrick_p17_gt.json <span class="muted">(7 条真值, 人工逐行核验)</span></h3>
+    <h3>barrick_p17_gt.json <span class="muted">(7 条真值 | 同源集 | 人工逐行核验)</span></h3>
+    <p class='note'>This page reports the same deposits as the few-shot example (page 191 Table 14-21), so these numbers are partly present in the extractor prompt. Use barrick_p192_gt.json for leak-free capability evidence.</p>
     <div class="kv">
       <div><span>记录匹配</span><b>7/7</b></div>
       <div><span>记录级全对</span><b>7/7</b></div>
@@ -288,7 +289,26 @@ mining recovery and dilution, processing recovery, and other input factors.
     </details>
   </div>
   <div class="gtblock">
-    <h3>barrick_p192_gt.json <span class="muted">(42 条真值, 人工逐行核验)</span></h3>
+    <h3>barrick_p191_gt.json <span class="muted">(42 条真值 | 同源集 | 非人工核验, 仅作回归)</span></h3>
+    <p class='note'>few-shot 取自本页 -&gt; 本 GT 与提示词同源。只能用于一致性/回归, 不得计入盲测能力证据; 盲测证据只看 p192。</p>
+    <div class="kv">
+      <div><span>记录匹配</span><b>42/42</b></div>
+      <div><span>记录级全对</span><b>42/42</b></div>
+      <div><span>抽取富余</span><b>56 条(含 GT 未覆盖页, 不扣分)</b></div>
+    </div>
+    <div class="bar"><div class="fill ok" style="width:100.0%"></div></div><div class="barlabel">252/252 = 100.0%</div>
+    <table class="narrow"><thead><tr><th>字段</th><th>通过</th><th></th></tr></thead>
+      <tbody><tr><td>basis</td><td class='num'>42/42</td><td><span class=ok>通过</span></td></tr><tr><td>category</td><td class='num'>42/42</td><td><span class=ok>通过</span></td></tr><tr><td>contained</td><td class='num'>42/42</td><td><span class=ok>通过</span></td></tr><tr><td>grade</td><td class='num'>42/42</td><td><span class=ok>通过</span></td></tr><tr><td>tonnes</td><td class='num'>42/42</td><td><span class=ok>通过</span></td></tr><tr><td>unit</td><td class='num'>42/42</td><td><span class=ok>通过</span></td></tr></tbody></table>
+    <p class='note'>全部记录逐字段通过, 无偏差行。</p>
+    <details><summary>展开逐字段偏差(±5% 容差, 缺失记错, 单位必须一致)</summary>
+      <table><thead><tr><th>真值记录</th><th>类别</th><th>吨位</th><th>品位</th><th>金属量</th>
+        <th>单位</th><th>基准</th><th>抽取记录</th></tr></thead>
+        <tbody><tr><td colspan="8">无偏差</td></tr></tbody></table>
+    </details>
+  </div>
+  <div class="gtblock">
+    <h3>barrick_p192_gt.json <span class="muted">(42 条真值 | 盲测集 | 人工逐行核验)</span></h3>
+    
     <div class="kv">
       <div><span>记录匹配</span><b>42/42</b></div>
       <div><span>记录级全对</span><b>42/42</b></div>
@@ -305,7 +325,7 @@ mining recovery and dilution, processing recovery, and other input factors.
     </details>
   </div>
   <h3>提示词泄漏检查</h3>
-  <ul><li>barrick_p17_gt.json: 7/7 条三元组与 prompt 逐字重合 —— <b>不可作为能力证据</b>(与 few-shot 同源)</li><li>barrick_p192_gt.json: 0/42 条三元组与 prompt 逐字重合 —— 零重叠, 可作为盲测能力证据</li></ul>
+  <ul><li>barrick_p17_gt.json: 7/7 条三元组与 prompt 逐字重合 —— <b>不可作为能力证据</b>(与 few-shot 同源)</li><li>barrick_p191_gt.json: 10/42 条三元组与 prompt 逐字重合 —— <b>不可作为能力证据</b>(与 few-shot 同源)</li><li>barrick_p192_gt.json: 0/42 条三元组与 prompt 逐字重合 —— 零重叠, 可作为盲测能力证据</li></ul>
 </section>
 <section>
   <h2>成本与延迟</h2>
@@ -335,11 +355,11 @@ mining recovery and dilution, processing recovery, and other input factors.
   <p class="lead">报告里的每个数字都能被重新核对; 下表断言在渲染之前执行, 任何一条不成立都会染红。</p>
   <table class="narrow">
     <thead><tr><th>结果</th><th>断言</th><th>实际</th><th>期望</th></tr></thead>
-    <tbody><tr class='okrow'><td><span class='ok'>一致</span></td><td>候选页 == 124</td><td class='num'>124</td><td class='num'>124</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>送审页 &gt;= 1</td><td class='num'>12</td><td class='num'>&gt;=1</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>交付记录 == 98</td><td class='num'>98</td><td class='num'>98</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>可交付明细 == 84</td><td class='num'>84</td><td class='num'>84</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>abstain 页 == 0(干净数据)</td><td class='num'>0</td><td class='num'>0</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>p17 GT == 7 条</td><td class='num'>7</td><td class='num'>7</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>p192 GT == 42 条</td><td class='num'>42</td><td class='num'>42</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>results.json 含 abstain/mark_for_human/last_score</td><td class='num'>abstain,mark_for_human,last_score</td><td class='num'>全部</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>弃权行为验收 pass</td><td class='num'>True</td><td class='num'>True</td></tr></tbody></table>
+    <tbody><tr class='okrow'><td><span class='ok'>一致</span></td><td>候选页 == 124</td><td class='num'>124</td><td class='num'>124</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>送审页 &gt;= 1</td><td class='num'>12</td><td class='num'>&gt;=1</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>交付记录 == 98</td><td class='num'>98</td><td class='num'>98</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>可交付明细 == 84</td><td class='num'>84</td><td class='num'>84</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>abstain 页 == 0(干净数据)</td><td class='num'>0</td><td class='num'>0</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>p17 GT == 7 条</td><td class='num'>7</td><td class='num'>7</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>p192 GT == 42 条</td><td class='num'>42</td><td class='num'>42</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>p191 GT == 42 条</td><td class='num'>42</td><td class='num'>42</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>GT 总记录 == 91</td><td class='num'>91</td><td class='num'>91</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>results.json 含 abstain/mark_for_human/last_score</td><td class='num'>abstain,mark_for_human,last_score</td><td class='num'>全部</td></tr><tr class='okrow'><td><span class='ok'>一致</span></td><td>弃权行为验收 pass</td><td class='num'>True</td><td class='num'>True</td></tr></tbody></table>
   <h3>子检查命令</h3>
   <table class="narrow">
     <thead><tr><th>结果</th><th>命令</th><th>耗时</th><th>exit code</th></tr></thead>
-    <tbody><tr class='okrow'><td><span class='ok'>通过</span></td><td class='mono'>python src/check_docs.py</td><td class='num'>0.6 s</td><td class='num'>0</td></tr><tr class='okrow'><td><span class='ok'>通过</span></td><td class='mono'>python src/selftest_guards.py</td><td class='num'>1.8 s</td><td class='num'>0</td></tr><tr class='okrow'><td><span class='ok'>通过</span></td><td class='mono'>python src/evaluate.py data/ground_truth/barrick_p192_gt.json --out output/_regress_eval.json</td><td class='num'>0.8 s</td><td class='num'>0</td></tr></tbody></table>
+    <tbody><tr class='okrow'><td><span class='ok'>通过</span></td><td class='mono'>python src/check_docs.py</td><td class='num'>0.4 s</td><td class='num'>0</td></tr><tr class='okrow'><td><span class='ok'>通过</span></td><td class='mono'>python src/selftest_guards.py</td><td class='num'>1.2 s</td><td class='num'>0</td></tr><tr class='okrow'><td><span class='ok'>通过</span></td><td class='mono'>python src/verify_gt.py</td><td class='num'>0.3 s</td><td class='num'>0</td></tr><tr class='okrow'><td><span class='ok'>通过</span></td><td class='mono'>python src/evaluate.py --gt-dir data/ground_truth --out output/_regress_eval.json</td><td class='num'>0.7 s</td><td class='num'>0</td></tr></tbody></table>
 </section></main>
 <footer>本页由 <code>app/report.py</code> 生成, 生成过程未调用任何模型; 所有数字均可在仓库产物中逐条核对。</footer>
 </body></html>

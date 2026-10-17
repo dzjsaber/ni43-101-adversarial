@@ -51,6 +51,7 @@ src/mineral_mcp.py     MCP 工具层: 费用护栏(无 confirm 拒绝) + 路径�
 src/mcp_probe.py       模拟 MCP 宿主做真握手, 验证 10 个工具与护栏(零成本)
 src/check_docs.py      文档与仓库一致性校验(零成本): 文件引用/行数/条数防止漂移
 src/usage_log.py       逐调用 usage/耗时明细(环境变量 NI43_USAGE_LOG 开关; 不开则空操作)
+src/verify_gt.py       GT 自身确定性校验(三元组逐字命中原文/聚合行/重复/守恒/单位; 零成本)
 
 # ---- 平台壳(只读产物, 不重写上面的逻辑) ----
 app/report.py          生成一页自包含的可视化报告 output/report.html(不调用模型)
@@ -70,6 +71,7 @@ data/evolution.jsonl                            失败/返工/弃权/演习/对�
 data/evolved_rules.txt / evolved_critic_rules.txt  炼化出的两端规则
 data/ground_truth/barrick_p17_gt.json                     摘要表真值 7 条
 data/ground_truth/barrick_p192_gt.json                    明细表真值 42 条(泄漏免疫)
+data/ground_truth/barrick_p191_gt.json                    明细表真值 42 条(与 few-shot 同源, 非人工核验, 仅作回归)
 output/results.json                             题目要求的抽取结果(indicated/inferred/评分/abstain)
 output/evolution.jsonl                          失败轨迹快照(权威文件 data/evolution.jsonl)
 output/protocol_check.json                      弃权行为验收记录(演习1 ACCEPT / 演习2 ABSTAIN)
@@ -97,6 +99,8 @@ python src/check_docs.py                                    # 文档与仓库一
 python src/run_all.py data/pdfs/<报告名>.pdf [gt.json]    # 一份报告一条命令全链路(要 2 个 key)
 python pipeline/evolution_log.py --tail 10                 # 失败轨迹
 python src/spec_export.py                                  # 单独导出 output/results.json
+python src/verify_gt.py                                    # GT 自身机械校验(不要 key)
+python src/evaluate.py --gt-dir data/ground_truth          # 多份 GT 分栏对账(不要 key)
 ```
 
 ## 3.1 平台壳 `app/`(零成本优先, 不重写 `src/` 的逻辑)
@@ -124,6 +128,24 @@ python app/report.py                      # 只用现有产物出报告
    回归前你自己改过的文件不会被它覆盖(只恢复"本次回归引入的改动")。
 4. 逐调用明细用环境变量开关控制: 不设置时 `call_llm` / `call_glm` 行为与输出与之前完全一致。
 
+### 3.2 GT 分层与校验(P2)
+
+三份 GT 必须分开看, 不能混成一个 accuracy:
+
+| GT | 条数 | 类型 | 核验方式 | 用途 |
+|---|---|---|---|---|
+| `barrick_p192_gt.json` | 42 | **盲测集** | 人工逐行转录, 与提示词零重叠 | 唯一的能力证据 |
+| `barrick_p17_gt.json` | 7 | 同源集 | 人工逐行转录(摘要表) | 一致性回归 |
+| `barrick_p191_gt.json` | 42 | 同源集 | 页面文本层确定性解析 + 与模型输出交叉印证, **非人工** | 一致性回归, 不得计入能力证据 |
+
+```powershell
+python src/verify_gt.py                     # 机械校验: 数值是否真的在页面对应行、守恒是否自洽、有无重复/聚合行
+python src/evaluate.py --gt-dir data/ground_truth --out output/_eval.json   # 分栏对账
+```
+
+`verify_gt.py` 只能证明"数值抄自页面", 证明不了"这行属于哪个矿点、哪个类别"的业务判断;
+所以 `_verified.human_review=false` 的 GT 一律只作回归集。报告页会把这一状态直接印在标题上。
+
 ## 4. 结果摘要(Barrick Carlin Complex, 2024 技术报告)
 
 **先把数据来源说清楚(题目承诺的输入实际未提供):**
@@ -133,7 +155,7 @@ python app/report.py                      # 只用现有产物出报告
 | Barrick Carlin(2024) | ❌ 未提供 | 候选人**自行从公开渠道获取了 1 份真实 NI 43-101 技术报告**作为测试数据:`data/pdfs/barrick.pdf`(338 页 / 10.21 MB / SHA256 `43380869…13DD`) |
 | Newmont | ❌ 未提供 | **无法验证**;`data/pdfs/newmont.config.json` + GT 到位后执行 `python src/run_all.py` 即可接入 |
 | Pilbara Minerals | ❌ 未提供 | **无法验证**;锂/钽口径需要新建配置(`grade_unit=%` / `metal_unit=Mt` 或 `t`,`contained_factor` 按第 10 节的因子表填) |
-| 官方 GT | ❌ 未提供 | 候选人对自备报告的两页资源表**逐行手工核验**, 生成 `data/ground_truth/barrick_p17_gt.json`(7 条)与 `barrick_p192_gt.json`(42 条) |
+| 官方 GT | ❌ 未提供 | 候选人对自备报告的两页资源表**逐行手工核验**, 生成 `data/ground_truth/barrick_p17_gt.json`(7 条)与 `barrick_p192_gt.json`(42 条);另加一份非人工核验的同源回归集 `barrick_p191_gt.json`(42 条) |
 
 因此本节所有数字仅代表**自备的 Barrick 单份报告**, 不代表三家报告或官方 GT 的表现。
 
@@ -159,8 +181,12 @@ python app/report.py                      # 只用现有产物出报告
 
 | GT | 条数 | 匹配 | 字段级 | 记录级全对 |
 |---|---|---|---|---|
-| `barrick_p17_gt.json`(摘要表, 人工核验) | 7 | 7/7 | 35/35 = 100% | 7/7 |
-| `barrick_p192_gt.json`(**泄漏免疫**, 明细表) | 42 | 42/42 | 210/210 = 100% | 42/42 |
+| `barrick_p192_gt.json`(**泄漏免疫**, 明细表, 盲测) | 42 | 42/42 | 252/252 = 100% | 42/42 |
+| `barrick_p17_gt.json`(摘要表, 人工核验, 同源) | 7 | 7/7 | 42/42 = 100% | 7/7 |
+| `barrick_p191_gt.json`(明细表, 同源, **非人工核验**) | 42 | 42/42 | 252/252 = 100% | 42/42 |
+
+合计 91 条, 546/546 字段; 其中盲测集仅 p192 的 42 条。p191 由页面文本层确定性解析生成,
+与模型输出逐条交叉印证(42/42 一致), 但**没有人工逐行核验**, 因此只作一致性回归。
 
 > 为什么以 p192 为准: 提示词里的 few-shot 取自 p191, 与 p17/p154 是同一批矿体(数字逐字相同),
 > 所以 p17 的对账**不能**作为抽取能力证据(实测 7/7 条 GT 三元组与 prompt 重合);
