@@ -11,6 +11,7 @@ check_docs.py — 文档与仓库一致性闸门(零成本, 不调 API)
 """
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -42,11 +43,24 @@ def load_lines(rel):
     return [l for l in p.read_text(encoding="utf-8").splitlines() if l.strip()]
 
 
-repo_files = sorted(
-    str(p.relative_to(ROOT)).replace("\\", "/")
-    for p in ROOT.rglob("*")
-    if p.is_file() and ".git" not in p.parts and "__pycache__" not in p.parts
-)
+def _repo_files() -> list:
+    """已跟踪 + 未忽略的新文件 = '仓库文件'。运行时产物(app.db、output/jobs/)由
+    .gitignore 排除, 不应要求 README 逐个介绍。"""
+    try:
+        r = subprocess.run(["git", "ls-files", "--cached", "--others", "--exclude-standard"],
+                           cwd=str(ROOT), capture_output=True, timeout=30)
+        if r.returncode == 0:
+            return sorted({l.strip() for l in
+                           (r.stdout or b"").decode("utf-8", "replace").splitlines()
+                           if l.strip()})
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return sorted(str(p.relative_to(ROOT)).replace("\\", "/")
+                  for p in ROOT.rglob("*")
+                  if p.is_file() and ".git" not in p.parts and "__pycache__" not in p.parts)
+
+
+repo_files = _repo_files()
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 runmd = (ROOT / "RUN.md").read_text(encoding="utf-8")
 docs = readme + "\n" + runmd

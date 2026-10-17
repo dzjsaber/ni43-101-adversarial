@@ -146,16 +146,32 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | `src/verify_gt.py` | 236 | **GT 自身确定性校验**:三元组逐字命中原文、聚合行、重复、守恒、单位;零成本 |
 | `src/check_docs.py` | 141 | 文档与仓库一致性闸门(文件引用/行数/产物条数) |
 
-### 4.2b 平台壳 `app/`(3 个) —— 只读产物, 不重写 `src/` 的逻辑
+### 4.2b 平台壳 `app/`(8 个) —— 最小任务编排 + 一页报告, 不重写 `src/` 的逻辑
 
 | 文件 | 行数 | 作用 |
 |---|---|---|
+| `app/server.py` | 155 | FastAPI 路由:health / 上传建 job / 列表 / 详情 / 结果 / 续跑(只监听 127.0.0.1) |
+| `app/jobs.py` | 243 | 单 worker 线程:预处理 → 逐页调用 `pipeline.run_page` → 页级状态落库;支持断点续跑 |
+| `app/db.py` | 206 | SQLite 四表:jobs / pages / results / events |
+| `app/__main__.py` | 22 | `python -m app` 启动(默认 127.0.0.1:8000) |
+| `app/static/index.html` | — | 中文单页界面:任务列表 / 拖拽上传 / 详情(进度+结果+审计+abstain+GT+成本), 原生 JS 轮询 |
 | `app/report.py` | — | 生成一页**自包含**的可视化报告 `output/report.html`(机制/逐页/结果/审计/abstain/对账/成本/自检) |
 | `app/regress.py` | 163 | **一键回归**:跑自检 → 出报告 → 写 `output/regress.json`;`--run` 才真实重跑管线 |
 | `app/__init__.py` | 14 | 包引导与路径常量 |
 
 > `app/report.py` 与 `src/check_docs.py` 的行数不写死在这里(它们自己也生成/校验文档, 写了会自相矛盾)。
-> FastAPI 服务入口属于平台化阶段, 当前尚未实现 —— 本阶段只做静态报告页与一键回归。
+> 平台的范围刻意很窄:不做鉴权、不做并发、不做 SSE;单机自用,轮询足够。
+
+平台 API(全部本地, 无鉴权):
+
+| 方法 | 路径 | 作用 |
+|---|---|---|
+| `GET` | `/api/health` | 服务/worker/密钥状态 |
+| `POST` | `/api/jobs` | multipart 上传 `file`(PDF ≤50MB)、可选 `gt`、`max_pages`(默认 12) |
+| `GET` | `/api/jobs` | 任务列表(状态/进度/调用/tokens/起止时间) |
+| `GET` | `/api/jobs/{id}` | 任务详情 + 每页状态 |
+| `GET` | `/api/jobs/{id}/results` | 记录表 / 页状态 / 审计事件 / abstain / GT 对账 |
+| `POST` | `/api/jobs/{id}/resume` | 断点续跑(已完成页跳过, 不重复调用) |
 
 ### 4.3 数据与产物
 
@@ -178,6 +194,8 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | `output/usage.jsonl` | **逐次 LLM 调用明细**(agent/页/耗时/tokens);真实运行时由 `NI43_USAGE_LOG` 打开 |
 | `output/_regress_eval.json` | 回归期间的对账结果(避免覆盖权威 `eval_report.json`) |
 | `output/gt_check.json` | GT 自身机械校验结果(逐份/逐条, `src/verify_gt.py` 生成) |
+| `app.db` | **SQLite 任务库(运行时生成, 不入库)**: jobs / pages / results / events |
+| `output/jobs/<id>/` | 每个任务的上传 PDF、候选页、逐调用用量、GT(运行时生成, 不入库) |
 | `data/processed/replay_ab.json` | 进化规则 A/B 结果 |
 | `data/evolution.jsonl` | 失败/返工/弃权/演习/对账轨迹(**append-only**) |
 | `data/evolved_rules.txt` / `data/evolved_critic_rules.txt` | 炼化出的两端规则 |
@@ -194,6 +212,7 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | `RUN.md` | 运行手册(含第 10 节: 新增报告 / 报告配置字段表) |
 | `requirements.txt` | 必需依赖:`requests`、`pdfplumber` |
 | `requirements-optional.txt` | 可选依赖:`python-dotenv`、`tqdm`(缺了照跑, 代码 try/except 降级) |
+| `requirements-app.txt` | 平台壳可选依赖:`fastapi`、`uvicorn`、`python-multipart`(本机实测 0.142.2 / 0.54.0 / 0.0.32) |
 | `.gitignore` | 忽略 `__pycache__/`、`venv/`、`.env`、MCP 运行日志 |
 | `.env.example` | 密钥模板(复制成 `.env` 用;真实密钥永不入库) |
 | `.gitattributes` | 统一 LF 换行、声明二进制文件(避免跨平台整文件 diff) |
@@ -241,6 +260,8 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 | 只出报告(已有产物) | `python app/report.py` | 生成 `output/report.html`, 不调用模型 |
 | **GT 自身校验**(零成本) | `python src/verify_gt.py` | 3 份 GT / 91 条全部通过机械校验 |
 | 多份 GT 分栏对账 | `python src/evaluate.py --gt-dir data/ground_truth` | 盲测集与同源集分开统计 |
+| **启动平台** | `python -m app` | 浏览器打开 `http://127.0.0.1:8000`, 任务列表 / 新建 / 详情三块 |
+| 平台健康检查 | `http://127.0.0.1:8000/api/health` | `status=ok`、worker 在线、两个 key 已配置 |
 | 题目主入口(全链路) | `python pipeline/revise_loop.py --pdf data/pdfs/barrick.pdf --gt data/ground_truth/barrick_p192_gt.json` | 5 步全绿 + `output/results.json` |
 | 只算计划不花钱 | 同上加 `--dry-run` | 打印步骤与预计调用量, 不调用 API |
 | **评分协议**(字段级 ±5%) | `python src/evaluate.py data/ground_truth/barrick_p192_gt.json` | 匹配 42/42, **252/252 = 100%** |
@@ -272,6 +293,7 @@ pip install -r requirements.txt            # 必需依赖
 pip install -r requirements-optional.txt   # 可选(.env / 进度条)
 
 python app/regress.py                                                     # 零成本: 一键回归 + 出可视化报告
+python -m app                                                             # 启动平台(127.0.0.1:8000)
 python src/verify_gt.py                                                   # 零成本: GT 自身机械校验
 python src/check_docs.py                                                  # 零成本: 文档一致性
 python src/selftest_guards.py                                             # 零成本: 回归

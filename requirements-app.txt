@@ -1,0 +1,6 @@
+# 平台壳(可选): python -m app 启动 Web 界面
+# 本机实测: fastapi 0.142.2 / uvicorn 0.54.0 / python-multipart 0.0.32
+# 版本下限未逐一验证, 装不上时以本机实测版本为准
+fastapi>=0.110
+uvicorn>=0.27
+python-multipart>=0.0.9

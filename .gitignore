@@ -4,3 +4,8 @@ venv/
 .venv/
 .env
 data/processed/last_mcp_run.log
+app.db
+app.db-wal
+app.db-shm
+output/jobs/
+output/_server.*

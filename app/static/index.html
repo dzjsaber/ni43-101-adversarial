@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NI 43-101 对抗式抽取平台</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1c1f23;--muted:#6b7280;--line:#e3e6ea;
+--ok:#0f7b4f;--warn:#9a6700;--bad:#b42318;--accent:#1f4e79}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.6 -apple-system,"Segoe UI","Microsoft YaHei",Roboto,sans-serif}
+header{background:linear-gradient(135deg,#1f4e79,#2f6fa8);color:#fff;padding:20px 28px;
+display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px}
+header h1{margin:0;font-size:19px}
+header .sub{opacity:.9;font-size:13px}
+header .spacer{flex:1}
+.chip{font-size:12px;padding:2px 9px;border-radius:999px;background:rgba(255,255,255,.16)}
+.chip.ok{background:#1a8a55}
+.chip.bad{background:#b42318}
+main{max-width:1240px;margin:0 auto;padding:20px 18px 60px}
+section{background:var(--card);border:1px solid var(--line);border-radius:10px;
+padding:18px 20px;margin:16px 0;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+section h2{margin:0 0 12px;font-size:16.5px;color:var(--accent)}
+h3{margin:18px 0 8px;font-size:14.5px}
+.muted{color:var(--muted)}
+.note{color:var(--muted);font-size:13px;margin:8px 0 0}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{border-bottom:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:#f0f3f7;font-weight:600}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.mono{font-family:Consolas,"Courier New",monospace;font-size:12.5px;white-space:pre-wrap}
+.wrap{overflow-x:auto}
+.ok{color:var(--ok);font-weight:600}
+.bad{color:var(--bad);font-weight:600}
+.warn{color:var(--warn);font-weight:600}
+.null{color:var(--bad);background:#fdecea;border-radius:3px;padding:0 5px;font-size:12px}
+#drop{border:2px dashed #c9d3df;border-radius:10px;padding:26px;text-align:center;
+background:#fbfcfe;cursor:pointer;transition:.15s}
+#drop.over{border-color:var(--accent);background:#f0f6fc}
+#drop b{color:var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center;margin-top:12px}
+input[type=number]{width:80px;padding:5px 7px;border:1px solid var(--line);border-radius:6px}
+button{padding:7px 14px;border-radius:7px;border:1px solid var(--line);background:#fff;
+cursor:pointer;font-size:13.5px}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button:disabled{opacity:.55;cursor:not-allowed}
+.bar{height:9px;background:#eaeef3;border-radius:6px;overflow:hidden;margin:8px 0 4px}
+.fill{height:100%;background:var(--accent);transition:width .3s}
+.fill.ok{background:var(--ok)}.fill.bad{background:var(--bad)}
+.kv{display:flex;flex-wrap:wrap;gap:6px 24px;font-size:13.5px;margin:8px 0}
+.kv span{color:var(--muted);margin-right:7px}
+#msg{display:none;margin:10px 0;padding:9px 12px;border-radius:8px;font-size:13.5px}
+#msg.err{display:block;background:#fdecea;color:var(--bad)}
+#msg.info{display:block;background:#eef5fb;color:var(--accent)}
+.status{font-size:12.5px;padding:1px 8px;border-radius:999px;background:#eef2f7}
+.status.running{background:#e8f1fa;color:#1f4e79}
+.status.done{background:#e9f7ef;color:var(--ok)}
+.status.failed{background:#fdecea;color:var(--bad)}
+.status.abstain{background:#fff6e5;color:var(--warn)}
+.empty{padding:22px;text-align:center;color:var(--muted)}
+.clickable{cursor:pointer}
+.clickable:hover{background:#f7fafd}
+details{margin-top:6px}
+summary{cursor:pointer;color:var(--accent);font-size:13px}
+pre{background:#f7f9fb;border:1px solid var(--line);border-radius:6px;padding:9px;
+overflow:auto;max-height:220px;font-size:12px;margin:6px 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>NI 43-101 对抗式抽取平台</h1>
+  <span class="sub">DeepSeek 抽取 + GLM 审计 + 确定性终审</span>
+  <span class="spacer"></span>
+  <span class="chip" id="h-worker">worker: —</span>
+  <span class="chip" id="h-keys">keys: —</span>
+</header>
+<main>
+  <div id="msg"></div>
+
+  <section id="new">
+    <h2>新建任务</h2>
+    <div id="drop">
+      <b>把 PDF 拖到这里</b>, 或点击选择文件<br>
+      <small class="muted">仅 PDF, ≤ 50MB; 可选同时上传 GT JSON</small>
+      <input type="file" id="pdf" accept="application/pdf,.pdf" hidden>
+      <input type="file" id="gt" accept="application/json,.json" hidden>
+    </div>
+    <div class="row">
+      <span id="picked" class="muted">未选择文件</span>
+      <button id="pick-gt">选择 GT(可选)</button>
+      <label>送审页上限 <input type="number" id="max-pages" value="12" min="1" max="50"></label>
+      <button class="primary" id="submit">开始抽取</button>
+    </div>
+    <p class="note">任务在后台串行执行; 每页状态写入 SQLite, 服务重启后点"续跑"从断点继续, 已完成页不会重复调用。</p>
+  </section>
+
+  <section id="list-section">
+    <h2>任务列表</h2>
+    <div class="wrap"><table id="jobs">
+      <thead><tr><th>任务</th><th>文件</th><th>状态</th><th>进度</th>
+        <th class="num">调用</th><th class="num">tokens</th><th>创建</th><th>结束</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <div id="jobs-empty" class="empty">还没有任务, 先上传一份 PDF。</div>
+  </section>
+
+  <section id="detail" hidden>
+    <div class="row" style="margin-top:0">
+      <h2 style="margin:0">任务详情 <span class="mono muted" id="d-id"></span></h2>
+      <span class="spacer" style="flex:1"></span>
+      <button id="back">返回列表</button>
+      <button id="resume" hidden>续跑</button>
+      <button id="refresh">刷新</button>
+    </div>
+    <div class="kv" id="d-kv"></div>
+    <div class="bar"><div class="fill" id="d-bar" style="width:0%"></div></div>
+    <div class="note" id="d-progress"></div>
+    <div id="d-error"></div>
+
+    <h3>逐页进度</h3>
+    <div class="wrap"><table id="d-pages">
+      <thead><tr><th>页</th><th class="num">定位分</th><th>状态</th><th>判定</th>
+        <th class="num">轮次</th><th class="num">评分</th><th class="num">记录</th>
+        <th class="num">调用</th><th class="num">tokens</th><th class="num">耗时 s</th></tr></thead>
+      <tbody></tbody></table></div>
+
+    <h3>抽取结果</h3>
+    <div class="wrap"><table id="d-records">
+      <thead><tr><th>页</th><th>矿点</th><th>类别</th><th class="num">吨位 Mt</th>
+        <th class="num">品位</th><th class="num">金属量</th><th>基准</th><th>分类</th>
+        <th class="num">重复页</th></tr></thead>
+      <tbody></tbody></table></div>
+    <div id="d-records-empty" class="note"></div>
+
+    <h3>abstain 与审计事件</h3>
+    <div class="wrap"><table id="d-abstain">
+      <thead><tr><th class="num">页</th><th class="num">轮次</th><th class="num">末次评分</th>
+        <th>残留指控</th></tr></thead>
+      <tbody></tbody></table></div>
+    <div id="d-abstain-empty" class="note"></div>
+    <div class="wrap"><table id="d-events">
+      <thead><tr><th>时间</th><th>类型</th><th class="num">页</th><th>明细</th></tr></thead>
+      <tbody></tbody></table></div>
+
+    <h3>GT 对账</h3>
+    <div id="d-gt" class="note">未上传 GT。</div>
+  </section>
+</main>
+
+<script>
+const STATUS = {queued:"排队中", running:"运行中", done:"完成", failed:"失败", interrupted:"已中断"};
+const PAGE_STATUS = {pending:"待跑", running:"运行中", done:"通过", abstain:"弃权", failed:"失败"};
+const KIND = {job_start:"任务开始", locating:"定位页面", page_done:"页完成",
+  page_skipped:"已跳过", page_failed:"页失败", job_done:"任务完成",
+  job_failed:"任务失败", job_resume:"续跑"};
+const state = {pdf:null, gt:null, detailId:null, timer:null};
+const $ = s => document.querySelector(s);
+
+function esc(v){
+  if(v === null || v === undefined) return '<span class="null">null</span>';
+  return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function msg(text, kind){
+  const el = $("#msg");
+  el.className = kind || "err";
+  el.textContent = text;
+  if(!text) el.className = "";
+}
+async function api(path, opts){
+  const r = await fetch(path, opts);
+  const body = await r.json().catch(() => ({}));
+  if(!r.ok) throw new Error(body.detail || ("HTTP " + r.status));
+  return body;
+}
+function pct(a, b){ return b ? Math.round(a / b * 100) : 0; }
+
+async function loadHealth(){
+  try{
+    const h = await api("/api/health");
+    $("#h-worker").textContent = "worker: " + (h.worker ? "在线" : "离线");
+    $("#h-worker").className = "chip " + (h.worker ? "ok" : "bad");
+    const keys = h.keys || {};
+    const ok = keys.DEEPSEEK_API_KEY && keys.ZHIPU_API_KEY;
+    $("#h-keys").textContent = "keys: " + (ok ? "两家已配置" : "缺失");
+    $("#h-keys").className = "chip " + (ok ? "ok" : "bad");
+  }catch(e){ $("#h-keys").textContent = "服务不可用"; $("#h-keys").className = "chip bad"; }
+}
+
+async function loadJobs(){
+  try{
+    const {jobs} = await api("/api/jobs");
+    const tb = $("#jobs tbody");
+    tb.innerHTML = jobs.map(j => {
+      const total = j.total_pages || 0;
+      const finished = (j.done_pages||0) + (j.abstain_pages||0) + (j.failed_pages||0);
+      return `<tr class="clickable" data-id="${esc(j.id)}">
+        <td class="mono">${esc(j.id)}</td><td>${esc(j.filename)}</td>
+        <td><span class="status ${esc(j.status)}">${esc(STATUS[j.status]||j.status)}</span></td>
+        <td>${finished}/${total} <span class="muted">(${pct(finished,total)}%)</span></td>
+        <td class="num">${esc(j.usage_calls)}</td><td class="num">${esc(j.usage_tokens)}</td>
+        <td class="mono">${esc(j.created_at||"")}</td><td class="mono">${esc(j.finished_at||"—")}</td></tr>`;
+    }).join("");
+    $("#jobs-empty").style.display = jobs.length ? "none" : "block";
+    tb.querySelectorAll("tr").forEach(tr => tr.onclick = () => openJob(tr.dataset.id));
+  }catch(e){ msg("任务列表加载失败: " + e.message); }
+}
+
+function stopPoll(){ if(state.timer){ clearInterval(state.timer); state.timer = null; } }
+
+async function openJob(id){
+  state.detailId = id;
+  $("#new").hidden = true;
+  $("#list-section").hidden = true;
+  $("#detail").hidden = false;
+  $("#d-id").textContent = id;
+  msg("");
+  await refreshDetail();
+  stopPoll();
+  state.timer = setInterval(refreshDetail, 2000);
+}
+
+function closeDetail(){
+  stopPoll(); state.detailId = null;
+  $("#new").hidden = false;
+  $("#detail").hidden = true;
+  $("#list-section").hidden = false;
+  loadJobs();
+}
+
+async function refreshDetail(){
+  const id = state.detailId;
+  if(!id) return;
+  try{
+    const [d, r] = await Promise.all([api("/api/jobs/" + id), api("/api/jobs/" + id + "/results")]);
+    const j = d.job;
+    const total = j.total_pages || 0;
+    const finished = (j.done_pages||0) + (j.abstain_pages||0) + (j.failed_pages||0);
+    const bar = $("#d-bar");
+    bar.style.width = pct(finished, total) + "%";
+    bar.className = "fill " + (j.status === "failed" ? "bad" : (j.status === "done" ? "ok" : ""));
+    $("#d-progress").textContent = total ? `已完成 ${finished}/${total} 页` : "正在定位候选页…";
+    $("#d-kv").innerHTML = [
+      ["状态", `<span class="status ${esc(j.status)}">${esc(STATUS[j.status]||j.status)}</span>`],
+      ["文件", esc(j.filename)], ["送审上限", esc(j.max_pages)],
+      ["调用", esc(j.usage_calls)], ["tokens", esc(j.usage_tokens)],
+      ["LLM 耗时", esc(j.usage_seconds) + " s"],
+      ["创建", esc(j.created_at)], ["结束", esc(j.finished_at||"—")]
+    ].map(([k,v]) => `<div><span>${k}</span><b>${v}</b></div>`).join("");
+    $("#d-error").innerHTML = j.error ? `<div class="note bad">错误: ${esc(j.error)}</div>` : "";
+    $("#resume").hidden = !["interrupted","failed","queued"].includes(j.status);
+
+    $("#d-pages tbody").innerHTML = d.pages.map(p => `<tr>
+      <td class="num">${esc(p.page_no)}</td><td class="num">${esc(p.score)}</td>
+      <td><span class="status ${esc(p.status)}">${esc(PAGE_STATUS[p.status]||p.status)}</span></td>
+      <td>${esc(p.verdict||"—")}</td><td class="num">${esc(p.rounds??"—")}</td>
+      <td class="num">${esc(p.critic_score??"—")}</td><td class="num">${esc(p.n_records)}</td>
+      <td class="num">${esc(p.usage_calls)}</td><td class="num">${esc(p.usage_tokens)}</td>
+      <td class="num">${esc(p.usage_seconds)}</td></tr>`).join("");
+
+    const recs = r.records || [];
+    $("#d-records tbody").innerHTML = recs.map(x => `<tr>
+      <td class="num">${esc(x.source_page)}</td><td>${esc(x.deposit)}</td>
+      <td>${esc(x.category)}</td><td class="num">${esc(x.tonnes_mt)}</td>
+      <td class="num">${esc(x.grade)}</td><td class="num">${esc(x.metal)}</td>
+      <td>${esc(x.basis)}</td><td>${esc(x.record_class||"")}</td>
+      <td class="num">${esc(x.duplicate_of_page||"—")}</td></tr>`).join("");
+    $("#d-records-empty").textContent = recs.length ? `共 ${recs.length} 条记录` : "暂无记录";
+
+    $("#d-events tbody").innerHTML = (r.events||[]).slice().reverse().map(e => `<tr>
+      <td class="mono">${esc(e.ts)}</td><td>${esc(KIND[e.kind]||e.kind)}</td>
+      <td class="num">${esc(e.page??"—")}</td>
+      <td class="mono">${esc(e.detail ? JSON.stringify(e.detail).slice(0,240) : "")}</td>
+    </tr>`).join("");
+    const byPage = {};
+    (r.events||[]).forEach(e => { if(e.page != null) byPage[e.page] = e.detail || {}; });
+    const abst = r.abstain || [];
+    $("#d-abstain tbody").innerHTML = abst.map(p => {
+      const issues = (byPage[p.page_no] || {}).issues || [];
+      return `<tr><td class="num">${esc(p.page_no)}</td>
+        <td class="num">${esc(p.rounds??"—")}</td>
+        <td class="num">${esc(p.critic_score??"—")}</td>
+        <td>${issues.length ? issues.map(esc).join("<br>") : '<span class="muted">见事件明细</span>'}</td></tr>`;
+    }).join("");
+    $("#d-abstain-empty").textContent = abst.length ? "" : "本次没有弃权页。";
+    $("#d-gt").innerHTML = renderGt(r.gt);
+
+    if(!["queued","running"].includes(j.status)) stopPoll();
+  }catch(e){ msg("详情加载失败: " + e.message); stopPoll(); }
+}
+
+function renderGt(g){
+  if(!g || !g.available) return '<span class="muted">未上传 GT。</span>';
+  const pctv = ((g.field_accuracy||0)*100).toFixed(1);
+  const bad = (g.details||[]).filter(d => !d.all_pass);
+  const rows = bad.map(d => {
+    const cells = ["category","tonnes","grade","contained","unit","basis"].map(k => {
+      const c = d.fields[k];
+      if(!c) return '<td class="muted">—</td>';
+      return `<td class="${c.pass?'ok':'bad'}">${c.pass?'✓':'✗'} <span class="mono">${esc(c.gt)} → ${esc(c.pred)}</span></td>`;
+    }).join("");
+    return `<tr><td>${esc(d.gt)}</td>${cells}<td class="muted">${esc(d.pred||"未匹配")}</td></tr>`;
+  }).join("");
+  return `<div class="kv">
+      <div><span>GT 记录</span><b>${esc(g.gt_records)}</b></div>
+      <div><span>匹配</span><b>${esc(g.matched)}/${esc(g.gt_records)}</b></div>
+      <div><span>字段级</span><b>${esc(g.field_correct)}/${esc(g.field_total)} = ${pctv}%</b></div>
+      <div><span>记录全对</span><b>${esc(g.perfect)}/${esc(g.matched)}</b></div>
+      <div><span>抽取富余</span><b>${esc(g.extra)}</b></div>
+    </div>` + (bad.length ? `<details><summary>展开 ${bad.length} 条有偏差的记录</summary>
+      <div class="wrap"><table><thead><tr><th>真值记录</th><th>类别</th><th>吨位</th>
+      <th>品位</th><th>金属量</th><th>单位</th><th>基准</th><th>抽取记录</th></tr></thead>
+      <tbody>${rows}</tbody></table></div></details>`
+      : '<p class="note">全部记录逐字段通过。</p>');
+}
+
+$("#drop").onclick = () => $("#pdf").click();
+$("#pdf").onchange = e => {
+  const f = e.target.files[0];
+  if(!f) return;
+  if(f.size > 50*1024*1024){ msg("文件超过 50MB"); return; }
+  state.pdf = f; $("#picked").textContent = f.name + " (" + (f.size/1048576).toFixed(1) + " MB)";
+};
+$("#pick-gt").onclick = () => $("#gt").click();
+$("#gt").onchange = e => {
+  state.gt = e.target.files[0] || null;
+  msg(state.gt ? "已选择 GT: " + state.gt.name : "", state.gt ? "info" : "");
+};
+["dragover","dragenter"].forEach(ev => $("#drop").addEventListener(ev, e => {
+  e.preventDefault(); $("#drop").classList.add("over");
+}));
+["dragleave","drop"].forEach(ev => $("#drop").addEventListener(ev, e => {
+  e.preventDefault(); $("#drop").classList.remove("over");
+}));
+$("#drop").addEventListener("drop", e => {
+  const f = e.dataTransfer.files[0];
+  if(!f) return;
+  if(f.size > 50*1024*1024){ msg("文件超过 50MB"); return; }
+  state.pdf = f; $("#picked").textContent = f.name + " (" + (f.size/1048576).toFixed(1) + " MB)";
+});
+
+$("#submit").onclick = async () => {
+  if(!state.pdf){ msg("请先选择 PDF"); return; }
+  const btn = $("#submit"); btn.disabled = true; msg("上传中…", "info");
+  try{
+    const fd = new FormData();
+    fd.append("file", state.pdf);
+    if(state.gt) fd.append("gt", state.gt);
+    fd.append("max_pages", $("#max-pages").value || "12");
+    const r = await api("/api/jobs", {method:"POST", body:fd});
+    msg("已创建任务 " + r.id + ", 正在后台执行", "info");
+    state.pdf = null; state.gt = null;
+    $("#picked").textContent = "未选择文件";
+    await loadJobs();
+    openJob(r.id);
+  }catch(e){ msg("创建失败: " + e.message); }
+  finally{ btn.disabled = false; }
+};
+
+$("#back").onclick = closeDetail;
+$("#refresh").onclick = () => { refreshDetail(); loadJobs(); };
+$("#resume").onclick = async () => {
+  if(!state.detailId) return;
+  try{
+    await api("/api/jobs/" + state.detailId + "/resume", {method:"POST"});
+    msg("已重新入队, 将从断点继续", "info");
+    openJob(state.detailId);
+  }catch(e){ msg("续跑失败: " + e.message); }
+};
+
+loadHealth();
+const m = (location.hash || "").match(/job=([a-f0-9]+)/);
+if(m){ openJob(m[1]); } else { loadJobs(); }
+setInterval(loadHealth, 30000);
+setInterval(() => { if($("#list-section").hidden === false) loadJobs(); }, 5000);
+</script>
+</body>
+</html>

@@ -57,6 +57,11 @@ src/verify_gt.py       GT 自身确定性校验(三元组逐字命中原文/聚�
 app/report.py          生成一页自包含的可视化报告 output/report.html(不调用模型)
 app/regress.py         一键回归: 自检 -> 报告 -> output/regress.json; --run 才真实重跑
 app/__init__.py        包引导与路径常量
+app/__main__.py        python -m app 启动(默认 127.0.0.1:8000)
+app/server.py          FastAPI 路由: 上传/列表/详情/结果/续跑
+app/jobs.py            单 worker 线程: 预处理 -> 逐页 run_page -> 页级状态落库
+app/db.py              SQLite 四表: jobs/pages/results/events
+app/static/index.html  中文单页界面(原生 JS 轮询)
 data/pdfs/barrick.pdf                        输入报告(当前只有这一份, 338 页)
 data/pdfs/barrick.config.json                该报告的商品/单位/守恒/关键词配置(Au g/t Moz)
 data/processed/barrick.pages.jsonl              定位出的 124 个候选页
@@ -101,6 +106,7 @@ python pipeline/evolution_log.py --tail 10                 # 失败轨迹
 python src/spec_export.py                                  # 单独导出 output/results.json
 python src/verify_gt.py                                    # GT 自身机械校验(不要 key)
 python src/evaluate.py --gt-dir data/ground_truth          # 多份 GT 分栏对账(不要 key)
+python -m app                                              # 启动平台(要 2 个 key 才能真跑)
 ```
 
 ## 3.1 平台壳 `app/`(零成本优先, 不重写 `src/` 的逻辑)
@@ -145,6 +151,27 @@ python src/evaluate.py --gt-dir data/ground_truth --out output/_eval.json   # �
 
 `verify_gt.py` 只能证明"数值抄自页面", 证明不了"这行属于哪个矿点、哪个类别"的业务判断;
 所以 `_verified.human_review=false` 的 GT 一律只作回归集。报告页会把这一状态直接印在标题上。
+
+### 3.3 平台 `python -m app`(P3)
+
+```powershell
+pip install -r requirements-app.txt   # fastapi / uvicorn / python-multipart(本机已装)
+python -m app                         # 浏览器打开 http://127.0.0.1:8000
+```
+
+三个验收点怎么验:
+
+1. **进度实时可见**: 上传 `data/pdfs/barrick.pdf`(送审页上限填 2 以控制费用), 详情页每 2 秒刷新;
+   预处理 338 页约 110 秒, 之后逐页显示 待跑/运行中/通过/弃权。
+2. **断点续跑**: 运行中直接关掉服务再启动 —— 启动时 `jobs.recover_on_start()` 会把上次
+   `running` 的 job 标成 `interrupted`、把 `running` 的页改回 `pending`, 然后自动重新入队;
+   已 `done` 的页会写一条 `page_skipped` 事件, 不会重复调用模型。
+   手工验证: 在详情页看到某页完成后按 `Ctrl+C` 停服务, 再 `python -m app`, 任务会自己继续。
+3. **成本与耗时**: 详情页顶部显示任务级调用数/tokens/LLM 耗时; 逐页表显示每页调用数/tokens/耗时。
+   续跑不会清空历史 `usage.jsonl`, 所以成本是累计的(重复跑的页也照实计入)。
+
+数据落在 `app.db`(SQLite) 与 `output/jobs/<id>/`(PDF 副本、候选页、usage、GT), 两者都在
+`.gitignore` 里, 不会进仓库。平台没有鉴权, 只监听 `127.0.0.1`, 不要改到 `0.0.0.0`。
 
 ## 4. 结果摘要(Barrick Carlin Complex, 2024 技术报告)
 
