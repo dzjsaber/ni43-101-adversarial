@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-18 03:01:34",
+  "generated_at": "2026-10-18 03:13:47",
   "mode": "zero-cost",
   "pages": "data\\processed\\barrick.pages.jsonl",
   "report": "output\\report.html",
@@ -7,14 +7,14 @@
     {
       "cmd": "python src/check_docs.py",
       "returncode": 0,
-      "seconds": 0.4,
+      "seconds": 0.7,
       "stderr": "",
       "pass": true
     },
     {
       "cmd": "python src/selftest_guards.py",
       "returncode": 0,
-      "seconds": 1.1,
+      "seconds": 1.4,
       "stderr": "",
       "pass": true
     },

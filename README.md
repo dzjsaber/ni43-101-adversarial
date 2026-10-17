@@ -5,6 +5,21 @@
 但"能不能放行"由代码判定(物理守恒、结构规则、指控逐字核验), 修不好就 `abstain` 转人工,
 绝不硬给;失败史炼化成提示词规则, 并用 A/B 复跑证明有效。
 
+## 界面
+
+平台一条命令启动(`python -m app`), 默认只监听 `127.0.0.1`:
+
+![平台首页](docs/screenshots/platform-home.png)
+
+任务详情: 逐页进度、记录表、abstain、审计事件、GT 对账、成本。下图中 p192 显示累计 4 次调用,
+是因为该任务在 p192 完成后被手动中断并续跑 —— 这是"成本如实累计、已完成页不重复调用"的证据。
+
+![任务详情](docs/screenshots/platform-detail.png)
+
+一键回归生成的单页报告(`python app/regress.py`), 自包含 HTML, 双击即可打开:
+
+![运行报告](docs/screenshots/report.png)
+
 ---
 
 ## 0. 数据来源与交付说明(请先读这一节)
@@ -49,6 +64,7 @@ python src/run_all.py data/pdfs/<公司>.pdf data/ground_truth/<公司>_gt.json
 | 验收④:`python pipeline/replay_evolution.py` 输出改进前后评分对比 | `src/replay_evolution.py` | ✅ 输出 A/B 表并写 `output/replay_ab.json` |
 | 验收⑤:RUN.md 写清 3 个 PDF 的抽取结果摘要 | `RUN.md` 第 4 节 | ✅ 提供 Barrick 实测摘要 + Newmont/Pilbara 标注"输入缺失, 无法验证" |
 | **平台化(任务书 P1)**: 一眼看懂结果 + 一键回归 | `app/report.py`、`app/regress.py` | ✅ `python app/regress.py` 出 `output/report.html`(机制/逐页/结果/审计/abstain/对账/成本/自检), 零成本;`--run` 加真实重跑并自动恢复产物 |
+| **平台化(任务书 P2/P3)**: 上传 → 后台任务 → 页级进度 → 断点续跑 → 结果页 | `app/server.py`、`app/jobs.py`、`app/db.py`、`app/static/index.html` | ✅ `python -m app` 一条命令;2 页实测 4 次调用/20,542 tokens;中断续跑跳过已完成页, 成本累加 |
 
 ## 2. 数据流(方括号内是本次 Barrick 的实测数字)
 
@@ -285,6 +301,10 @@ data/pdfs/barrick.config.json                            [Au / g/t / Moz / facto
 5. **原始抽取条数有波动**:`extracted.jsonl` 未过闸(实测 98~106);权威数字以管线产物为准。
 6. 同页同名不同 section(如 Surface / Underground 都叫 `Goldstrike`)在 schema 里没有字段区分,
    靠数值决胜;`MAX_PAGES=12` 会截断(已打印告警);只实现 Au/Moz 口径的默认配置。
+7. **p191 同源集非人工核验**:42 条由页面文本层确定性解析 + 与模型输出交叉印证, 但没有人工逐行核验;
+   报告与 API 都标 `human_review=false`, 不计入能力证据。
+8. **平台是单机单 worker**:无鉴权、无并发、无 SSE;每个新任务重新扫 PDF(338 页约 110 秒),
+   页级缓存尚未实现;只接受 PDF, 不接收报告 config, 非 Au 报告会退回默认配置。
 
 ## 9. 复现
 
